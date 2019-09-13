@@ -12,7 +12,7 @@ LDFLAGS=-lm
 # Rules and targets
 all: $(EXE)
 
-$(EXE): main.o io.o
+$(EXE): $(EXE).o
     $(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
