@@ -39,9 +39,6 @@ void print_usage() {
 
 int main(int argc, char *argv[]) {
 
-	// opterr = 0; /* (variable in getopt.h) set to 0 for ignore error when a
-	// invalid option is given */
-
 	/* boolean variables */
 	bool verbose = false; /* verbose variable */
 	bool contest_mode = false;
@@ -64,72 +61,71 @@ int main(int argc, char *argv[]) {
 		switch (optc) {
 
 			case 's': /* 'size' option */
-			int_optarg = atoi(optarg);
-			if (int_optarg < 1 || int_optarg > 5) {
-				printf("The argument of -s option must be between 1 and 5\n");
-			}
-			board_size = int_optarg * 2;
+				int_optarg = atoi(optarg);
+				if (int_optarg < 1 || int_optarg > 5) {
+					printf("The argument of -s option must be between 1 and 5\n");
+				}
+				board_size = int_optarg * 2;
 			break;
 
 			case 'b': /* 'black-ai' option */
-			if (optarg != NULL) {
-				int_optarg = atoi(optarg);
-				if (int_optarg != 1 && int_optarg != 0) {
-					printf("The argument of -b option must be 0 or 1\n");
-					exit(EXIT_FAILURE);
+				if (optarg != NULL) {
+					int_optarg = atoi(optarg);
+					if (int_optarg != 1 && int_optarg != 0) {
+						printf("The argument of -b option must be 0 or 1\n");
+						exit(EXIT_FAILURE);
+					}
+					tactic_b_player = int_optarg;
+					printf("option %c with %d of argument\n", optc, int_optarg);
 				}
-				tactic_b_player = int_optarg;
-				printf("option %c with %d of argument\n", optc, int_optarg);
-			}
 			break;
 
 			case 'w': /* 'white-ai' option */
-			if (optarg != NULL) {
-				int_optarg = atoi(optarg);
-				if (int_optarg != 1 && int_optarg != 0) {
-					printf("The argument of -w option must be 0 or 1\n");
-					exit(EXIT_FAILURE);
+				if (optarg != NULL) {
+					int_optarg = atoi(optarg);
+					if (int_optarg != 1 && int_optarg != 0) {
+						printf("The argument of -w option must be 0 or 1\n");
+						exit(EXIT_FAILURE);
+					}
+					tactic_w_player = int_optarg;
+					printf("option %c with %d of argument\n", optc, int_optarg);
 				}
-				tactic_w_player = int_optarg;
-				printf("option %c with %d of argument\n", optc, int_optarg);
-			}
 			break;
 
 			case 'c': /* 'contest' mode */
-			contest_mode = true;
+				contest_mode = true;
 			break;
 
 			case 'v': /* 'verbose' option */
-			verbose = true;
+				verbose = true;
 			break;
 
-			case 'V':               /*'version' option*/
-			printf("\033[0;32m"); /* green color text */
-			printf("reversi %d.%d.%d\n", VERSION, SUBVERSION, REVISION);
-			printf("\033[0;0m"); /* end green color */
-			printf("This software allows to play to reversi game.\n");
-			exit(EXIT_SUCCESS);
+			case 'V': /* 'version' option */
+				printf("\033[0;32m"); /* green color text */
+				printf("reversi %d.%d.%d\n", VERSION, SUBVERSION, REVISION);
+				printf("\033[0;0m"); /* end green color */
+				printf("This software allows to play to reversi game.\n");
+				exit(EXIT_SUCCESS);
 			break;
 
-			case 'h': /*'help' option*/
-			print_usage();
-			exit(EXIT_SUCCESS);
+			case 'h': /* 'help' option */
+				print_usage();
+				exit(EXIT_SUCCESS);
 			break;
 
-			case ':': /* if value of argument is not given */
-			printf("-%c commande must have a value\n", optopt);
+			case ':': /* if argument is not given */
+				printf("-%c commande must have a value\n", optopt);
 			break;
-			// case '?': /* if an unknown option is given */
-			// opterr = 0;
-			// printf("Try 'reversi --help' for more information\n");
-			// break;
+
 			default: /* if an unknown option is given */
-			printf("Try 'reversi --help' for more information\n");
-			exit(EXIT_FAILURE);
+				printf("Try 'reversi --help' for more information\n");
+				exit(EXIT_FAILURE);
 			break;
 		}
 	}
-	for (; optind < argc; optind++) { /* argument of the program */
+
+	/* get the argument of the program */
+	for (; optind < argc; optind++) {
 		file_name = argv[optind];
 		printf("extra arguments: %s\n", file_name);
 		file_argument = true;
@@ -143,7 +139,7 @@ int main(int argc, char *argv[]) {
 			if (contest_mode) { /* constes mode is enable */
 				printf("contest mode activé.. on lit le fichier\n");
 				FILE *fichier = NULL;
-				fichier = fopen(file_name, "r+");
+				fichier = fopen(file_name, "r+"); 
 				if (fichier != NULL) {
 					printf("Readable file\n");
 				} else {
