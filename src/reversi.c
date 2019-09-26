@@ -1,4 +1,5 @@
 #include <err.h>
+#include <errno.h>
 #include <getopt.h>
 #include "reversi.h"
 #include <stdbool.h>
@@ -20,12 +21,10 @@ static const struct option longOpts[] = {
 
 void red_color() {/* it used for errors */
 	printf("\033[0;31m"); /* red color text */
-	printf("\n");
-	printf("\033[0;0m"); /* reset color to default */
 }
 
 void print_usage() {
-	printf("Usage: reversi [-s SIZE|-b [N]|-w |-c|-v|-V|-h] [FILE]\n");
+	printf("Usage: reversi [-s SIZE|-b [N]|-w [N]|-c|-v|-V|-h] [FILE]\n");
 	printf("Play a reversi game with human or program players.\n");
 	printf("  -s, --size SIZE       board size (min=1, max=5 (default=4))\n");
 	printf("  -b, --black-ai [N]    set tactic of black player (default: 0)\n");
@@ -40,30 +39,34 @@ void print_usage() {
 int main(int argc, char *argv[]) {
 
 	/* boolean variables */
-	bool verbose = false; /* verbose variable */
 	bool contest_mode = false;
+	bool file_argument = false; /* true if file argument is given */
 	bool tactic_b_player = 0; /* 0 if humain plays, 1 if it is random */
 	bool tactic_w_player = 0; /* 0 if humain plays, 1 if it is random */
-	bool file_argument = false;
+	bool verbose = false; /* verbose variable */
 
 	/* integer variables */
+	int cpt_of_file = 0;/* give number of file argument */
 	int int_optarg; /* argument of option */
 	int longIndex;
 	int optc;
-	int cpt_of_file = 0;
 
 	/* other type */
 	size_t board_size = 4;
+	FILE *fichier = NULL;
 	char *file_name;
 
 	/* main while */
-	while ((optc = getopt_long(argc, argv, optString, longOpts, &longIndex)) != -1) {
+	while ((optc = getopt_long(argc, argv, optString, longOpts,
+		 &longIndex)) != -1) {
+
 		switch (optc) {
 
 			case 's': /* 'size' option */
 				int_optarg = atoi(optarg);
 				if (int_optarg < 1 || int_optarg > 5) {
-					printf("The argument of -s option must be between 1 and 5\n");
+					printf("The argument of -s option "
+						"must be between 1 and 5\n");
 				}
 				board_size = int_optarg * 2;
 			break;
@@ -72,11 +75,14 @@ int main(int argc, char *argv[]) {
 				if (optarg != NULL) {
 					int_optarg = atoi(optarg);
 					if (int_optarg != 1 && int_optarg != 0) {
-						printf("The argument of -b option must be 0 or 1\n");
+						printf("The argument of -b"
+							" option must be"
+							" 0 or 1\n");
 						exit(EXIT_FAILURE);
 					}
 					tactic_b_player = int_optarg;
-					printf("option %c with %d of argument\n", optc, int_optarg);
+					printf("option %c with %d of "
+						"argument\n", optc, int_optarg);
 				}
 			break;
 
@@ -84,11 +90,14 @@ int main(int argc, char *argv[]) {
 				if (optarg != NULL) {
 					int_optarg = atoi(optarg);
 					if (int_optarg != 1 && int_optarg != 0) {
-						printf("The argument of -w option must be 0 or 1\n");
+						printf("The argument of -w"
+							" option must be"
+							" 0 or 1\n");
 						exit(EXIT_FAILURE);
 					}
 					tactic_w_player = int_optarg;
-					printf("option %c with %d of argument\n", optc, int_optarg);
+					printf("option %c with %d of "
+						"argument\n", optc, int_optarg);
 				}
 			break;
 
@@ -102,9 +111,11 @@ int main(int argc, char *argv[]) {
 
 			case 'V': /* 'version' option */
 				printf("\033[0;32m"); /* green color text */
-				printf("reversi %d.%d.%d\n", VERSION, SUBVERSION, REVISION);
+				printf("reversi %d.%d.%d\n", VERSION,
+					SUBVERSION, REVISION);
 				printf("\033[0;0m"); /* end green color */
-				printf("This software allows to play to reversi game.\n");
+				printf("This software allows to play to "
+					"reversi game.\n");
 				exit(EXIT_SUCCESS);
 			break;
 
@@ -114,11 +125,13 @@ int main(int argc, char *argv[]) {
 			break;
 
 			case ':': /* if argument is not given */
-				printf("-%c commande must have a value\n", optopt);
+				printf("-%c commande must have an"
+					" argument\n", optopt);
 			break;
 
 			default: /* if an unknown option is given */
-				printf("Try 'reversi --help' for more information\n");
+				printf("Try 'reversi --help' for more"
+					" information\n");
 				exit(EXIT_FAILURE);
 			break;
 		}
@@ -127,35 +140,39 @@ int main(int argc, char *argv[]) {
 	/* get the argument of the program */
 	for (; optind < argc; optind++) {
 		file_name = argv[optind];
-		printf("extra arguments: %s\n", file_name);
 		file_argument = true;
 		cpt_of_file++;
 	}
 	if (cpt_of_file > 1) { /* more than 1 file is given */
 		red_color();
-		warnx("you must to give 1 file for the contest mode");
+		printf("Error: You must to give 1 file for the contest mode\n");
 	} else {
 		if (file_argument) {  /* file argument is given */
 			if (contest_mode) { /* constes mode is enable */
-				printf("contest mode activé.. on lit le fichier\n");
-				FILE *fichier = NULL;
-				fichier = fopen(file_name, "r+"); 
+				/* Reading file.. */
+				fichier = fopen(file_name, "r+");
 				if (fichier != NULL) {
 					printf("Readable file\n");
-				} else {
+				} else {/* The given argument is not a
+					 readable file */
 					red_color();
-					errx(1, "The given argument \"%s\" is not a readable file",
-					file_name);
+					printf("Error opening the file: %s\n",
+						strerror(errno));
+					exit(EXIT_FAILURE);
 				}
 			} else {
 				red_color();
-				errx(1, "A file is given but the contest mode is not activated with "
-				"option -c or --contest");
+				printf("Error: a file is given but the"
+					" contest mode is not activated with "
+					"option -c or --contest\n");
+				exit(EXIT_FAILURE);
 			}
 		} else {
 			if (contest_mode) { /* constes mode is enable */
 				red_color();
-				errx(1, "Contest mode is activated but no file is given");
+				printf("Error: contest mode is activated but"
+					" no file is given\n");
+				exit(EXIT_FAILURE);
 			}
 		}
 	}
