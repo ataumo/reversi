@@ -64,9 +64,10 @@ int main(int argc, char *argv[]) {
 
 			case 's': /* 'size' option */
 				int_optarg = atoi(optarg);
-				if (int_optarg < 1 || int_optarg > 5) {
+				if (int_optarg < 1 || int_optarg >= 5) {
 					printf("The argument of -s option "
 						"must be between 1 and 5\n");
+					exit(EXIT_FAILURE);
 				}
 				board_size = int_optarg * 2;
 			break;
@@ -81,8 +82,6 @@ int main(int argc, char *argv[]) {
 						exit(EXIT_FAILURE);
 					}
 					tactic_b_player = int_optarg;
-					printf("option %c with %d of "
-						"argument\n", optc, int_optarg);
 				}
 			break;
 
@@ -96,8 +95,6 @@ int main(int argc, char *argv[]) {
 						exit(EXIT_FAILURE);
 					}
 					tactic_w_player = int_optarg;
-					printf("option %c with %d of "
-						"argument\n", optc, int_optarg);
 				}
 			break;
 
