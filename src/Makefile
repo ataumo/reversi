@@ -1,10 +1,10 @@
 # Variables
-EXE=reversi
+EXE = reversi
 
 # Usual compilation flags
-CFLAGS=-std=c11 -Wall -Wextra -g -O2
-CPPFLAGS=-I../include -DDEBUG
-LDFLAGS=-lm
+CFLAGS = -std=c11 -Wall -Wextra -g -O2
+CPPFLAGS = -I../include -DDEBUG
+LDFLAGS = -lm
 
 # Special rules and targets
 .PHONY: all clean help

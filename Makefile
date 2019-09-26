@@ -1,5 +1,5 @@
 # Variables
-EXE=reversi
+EXE = reversi
 
 # Special rules and targets
 .PHONY: all build check clean help

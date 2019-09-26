@@ -1,29 +1,21 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "reversi.h"
+
 #include <err.h>
 #include <errno.h>
 #include <getopt.h>
-#include "reversi.h"
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-static const char *optString = ":s:b::w::cvVh"; /*valid options*/
-
-static const struct option longOpts[] = {
-	{"size", required_argument, NULL, 's'},
-	{"black-ai", optional_argument, NULL, 'b'},
-	{"white-ai", optional_argument, NULL, 'w'},
-	{"contest", no_argument, NULL, 'c'},
-	{"verbose", no_argument, NULL, 'v'},
-	{"version", no_argument, NULL, 'V'},
-	{"help", no_argument, NULL, 'h'}, /*help option*/
-	{NULL, 0, NULL, 0}};
-
-void red_color() {/* it used for errors */
+void
+red_color() { /* it used for errors */
 	printf("\033[0;31m"); /* red color text */
 }
 
-void print_usage() {
+void
+print_usage() {
 	printf("Usage: reversi [-s SIZE|-b [N]|-w [N]|-c|-v|-V|-h] [FILE]\n");
 	printf("Play a reversi game with human or program players.\n");
 	printf("  -s, --size SIZE       board size (min=1, max=5 (default=4))\n");
@@ -36,7 +28,19 @@ void print_usage() {
 	printf("Tactic list: human (0), random (1)\n");
 }
 
-int main(int argc, char *argv[]) {
+int
+main (int argc, char *argv[]) {
+
+	static const struct option longopts[] = {
+		{"size",     required_argument, NULL, 's'},
+		{"black-ai", optional_argument, NULL, 'b'},
+		{"white-ai", optional_argument, NULL, 'w'},
+		{"contest",  no_argument, 			NULL, 'c'},
+		{"verbose",  no_argument, 			NULL, 'v'},
+		{"version",  no_argument, 			NULL, 'V'},
+		{"help", 		 no_argument, 			NULL, 'h'}, /*help option*/
+		{NULL, 			 0, 								NULL,  0}
+	};
 
 	/* boolean variables */
 	bool contest_mode = false;
@@ -48,17 +52,17 @@ int main(int argc, char *argv[]) {
 	/* integer variables */
 	int cpt_of_file = 0;/* give number of file argument */
 	int int_optarg; /* argument of option */
-	int longIndex;
+	int long_index;
 	int optc;
 
 	/* other type */
 	size_t board_size = 4;
-	FILE *fichier = NULL;
+	FILE *file = NULL;
 	char *file_name;
+	static const char *opts = ":s:b::w::cvVh"; /*valid options*/
 
-	/* main while */
-	while ((optc = getopt_long(argc, argv, optString, longOpts,
-		 &longIndex)) != -1) {
+
+	while ((optc = getopt_long(argc, argv, opts, longopts, &long_index)) != -1) {
 
 		switch (optc) {
 
@@ -147,8 +151,8 @@ int main(int argc, char *argv[]) {
 		if (file_argument) {  /* file argument is given */
 			if (contest_mode) { /* constes mode is enable */
 				/* Reading file.. */
-				fichier = fopen(file_name, "r+");
-				if (fichier != NULL) {
+				file = fopen(file_name, "r+");
+				if (file != NULL) {
 					printf("Readable file\n");
 				} else {/* The given argument is not a
 					 readable file */
@@ -157,18 +161,17 @@ int main(int argc, char *argv[]) {
 						strerror(errno));
 					exit(EXIT_FAILURE);
 				}
+				fclose(file);
 			} else {
 				red_color();
-				printf("Error: a file is given but the"
-					" contest mode is not activated with "
-					"option -c or --contest\n");
+				printf("Error: a file is given but the contest mode is not"
+					" activated with option -c or --contest\n");
 				exit(EXIT_FAILURE);
 			}
 		} else {
 			if (contest_mode) { /* constes mode is enable */
 				red_color();
-				printf("Error: contest mode is activated but"
-					" no file is given\n");
+				printf("Error: contest mode is activated but no file is given\n");
 				exit(EXIT_FAILURE);
 			}
 		}
