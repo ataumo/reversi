@@ -38,4 +38,7 @@ board_t *board_alloc(const size_t size, const disc_t player);
 /* free memory allocated to hold the board */
 void board_free(board_t *board);
 
+/* init all the squares of the board as a starting game */
+board_t *board_init(const size_t size);
+
 #endif /* BOARD_H */

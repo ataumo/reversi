@@ -31,7 +31,7 @@ print_usage() {
 
 int
 main (int argc, char *argv[]) {
-	
+
 	static const struct option longopts[] = {
 		{"size",     required_argument, NULL, 's'},
 		{"black-ai", optional_argument, NULL, 'b'},
@@ -61,6 +61,7 @@ main (int argc, char *argv[]) {
 	char *file_name;
 	static const char *opts = ":s:b::w::cvVh"; /*valid options*/
 
+	board_init(4);
 
 	while ((optc = getopt_long(argc, argv, opts, longopts, NULL)) != -1) {
 		switch (optc) {

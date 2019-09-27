@@ -15,7 +15,7 @@ all: reversi
 reversi: reversi.o board.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-reversi.o: reversi.c
+reversi.o: reversi.c reversi.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
 
 board.o: board.c ../include/board.h
