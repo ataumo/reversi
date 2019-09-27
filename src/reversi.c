@@ -65,10 +65,9 @@ main (int argc, char *argv[]) {
 		switch (optc) {
 
 			case 's': /* 'size' option */
-				int_optarg = atoi(optarg);
-				if (int_optarg < 1 || int_optarg > 4) {
+				if ((int_optarg < 1 || int_optarg > 5) && strlen(optarg)!=1) {
 					red_color();
-					printf("Error: the argument of -s option should be between 1 and 4\n");
+					printf("Error: the argument of -s option should be between 1 and 5\n");
 					exit(EXIT_FAILURE);
 				}
 				board_size = int_optarg * 2;
@@ -77,7 +76,7 @@ main (int argc, char *argv[]) {
 			case 'b': /* 'black-ai' option */
 				if (optarg != NULL) { /* if argument is given */
 					int_optarg = atoi(optarg);
-					if (int_optarg != 1 && int_optarg != 0) {
+					if ((int_optarg != 1 && int_optarg != 0) && strlen(optarg)!=1) {
 						red_color();
 						printf("Error: the argument of -b option should be 0 or 1\n");
 						exit(EXIT_FAILURE);
@@ -89,7 +88,7 @@ main (int argc, char *argv[]) {
 			case 'w': /* 'white-ai' option */
 				if (optarg != NULL) { /* if argument is given */
 					int_optarg = atoi(optarg);
-					if (int_optarg != 1 && int_optarg != 0) {
+					if ((int_optarg != 1 && int_optarg != 0) && strlen(optarg)!=1) {
 						red_color();
 						printf("Error: the argument of -w option should be 0 or 1\n");
 						exit(EXIT_FAILURE);
