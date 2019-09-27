@@ -7,3 +7,5 @@ struct board_t
   disc_t player;
   disc_t **board;
 };
+
+printf("ok\n", );

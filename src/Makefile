@@ -12,7 +12,7 @@ LDFLAGS = -lm
 # Rules and targets
 all: $(EXE)
 
-$(EXE): $(EXE).o
+$(EXE): $(EXE).o board.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
