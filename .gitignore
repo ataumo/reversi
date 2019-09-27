@@ -1,0 +1,4 @@
+*.o
+reversi
+src/reversi
+src/*.o
