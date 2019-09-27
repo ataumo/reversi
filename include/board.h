@@ -41,4 +41,7 @@ void board_free(board_t *board);
 /* init all the squares of the board as a starting game */
 board_t *board_init(const size_t size);
 
+/* perform a deep copy of the board structure */
+board_t *board_copy(const board_t *board);
+
 #endif /* BOARD_H */
