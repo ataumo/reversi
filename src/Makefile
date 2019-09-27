@@ -10,12 +10,15 @@ LDFLAGS = -lm
 .PHONY: all clean help
 
 # Rules and targets
-all: $(EXE)
+all: reversi
 
-$(EXE): $(EXE).o board.o
+reversi: reversi.o board.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-%.o: %.c
+reversi.o: reversi.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
+
+board.o: board.c ../include/board.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
 
 clean:

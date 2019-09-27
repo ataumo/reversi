@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "reversi.h"
+#include "board.h"
 
 #include <err.h>
 #include <errno.h>
@@ -30,7 +31,7 @@ print_usage() {
 
 int
 main (int argc, char *argv[]) {
-
+	
 	static const struct option longopts[] = {
 		{"size",     required_argument, NULL, 's'},
 		{"black-ai", optional_argument, NULL, 'b'},
