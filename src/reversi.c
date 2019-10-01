@@ -32,9 +32,6 @@ print_usage() {
 int
 main (int argc, char *argv[]) {
 
-	board_t *board=board_alloc(2,BLACK_DISC);
-	board_t *new_board=board_copy(board);
-
 	static const struct option longopts[] = {
 		{"size",     required_argument, NULL, 's'},
 		{"black-ai", optional_argument, NULL, 'b'},
@@ -59,7 +56,7 @@ main (int argc, char *argv[]) {
 	int optc;						 /* current value of option */
 
 	/* other type */
-	size_t board_size = 4;
+	size_t board_size_num = 4;
 	FILE *file = NULL;
 	char *file_name;
 	static const char *opts = ":s:b::w::cvVh"; /*valid options*/
@@ -73,7 +70,7 @@ main (int argc, char *argv[]) {
 					printf("Error: the argument of -s option should be between 1 and 5\n");
 					exit(EXIT_FAILURE);
 				}
-				board_size = int_optarg * 2;
+				board_size_num = int_optarg * 2;
 			break;
 
 			case 'b': /* 'black-ai' option */
@@ -169,5 +166,12 @@ main (int argc, char *argv[]) {
 			}
 		}
 	}
+
+	board_t *board=board_alloc(10,BLACK_DISC);
+	size_t size = board_size(board);
+	board = board_init(size);
+	file = fopen("file.txt", "r+"); /* Reading file.. */
+	board_print(board,file);
+
 	exit(EXIT_SUCCESS);
 }

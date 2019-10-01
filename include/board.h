@@ -29,6 +29,7 @@ typedef struct {
   unsigned short white;
 } score_t;
 
+
 /* Reversi board (forwards declaration to hide the implementation) */
 typedef struct board_t board_t;
 
@@ -43,5 +44,11 @@ board_t *board_init(const size_t size);
 
 /* perform a deep copy of the board structure */
 board_t *board_copy(const board_t *board);
+
+/* return size of the board */
+size_t board_size(const board_t *board);
+
+/* write on the file 'fd' the content of the given board */
+int board_print(const board_t *board, FILE *fd);
 
 #endif /* BOARD_H */

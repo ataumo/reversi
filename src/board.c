@@ -1,5 +1,7 @@
 #include "board.h"
 
+#include <string.h>
+
 /* Internal board_t structure (hidden from the outside) */
 struct board_t
 {
@@ -39,7 +41,6 @@ void board_free(board_t *board){
 /* init all the squares of the board as a starting game */
 board_t *board_init(const size_t size){
   board_t *board = board_alloc(size,BLACK_DISC);
-  printf("OK\n");
   disc_t value_of_disc;
   for (size_t i = 0; i < size; i++) {
     for (size_t j = 0; j < size; j++) {
@@ -94,7 +95,86 @@ void board_set_player(board_t *board, disc_t new_player){
   board->player=new_player;
 }
 
-/*  */
+/* get the content of the square */
 disc_t board_get(const board_t *board, const size_t row, const size_t column){
-
+  size_t size=board_size(board);
+  if (row<=size && column<=size) {
+    return board->board[row][column];
+  }
+  return EMPTY_DISC;
 }
+
+/* set the given disc at the given position */
+void board_set(board_t *board, const disc_t disc, const size_t row, const size_t column){
+  size_t size=board_size(board);
+  if (row<=size && column<=size) {
+    board->board[row][column]=disc;
+  }
+}
+
+/* return score of the given board */
+score_t board_score(const board_t *board){
+  score_t score;
+  score.black = 0;
+  score.white = 0;
+  disc_t current_disc;
+  size_t size = board_size(board);
+  for (size_t i = 0; i < size; i++) {
+    for (size_t j = 0; j < size; j++) {
+      current_disc = board->board[i][j];
+      if (current_disc == BLACK_DISC) {
+        score.black += 1;
+      }else if (current_disc == WHITE_DISC){
+        score.white += 1;
+      }
+    }
+  }
+  return score;
+}
+
+
+/* write on the file 'fd' the content of the given board */
+int board_print(const board_t *board, FILE *fd){
+  if (fd == NULL) {
+    return -1;
+  }
+  size_t size = board_size(board);
+  disc_t current_player = board_player(board);
+  char *space_tampon = "  ";
+
+  fprintf(fd,"\n%c player's turn.\n", current_player);
+  fprintf(fd,"\n    ");
+  char current_char = 'A';
+  for (size_t i = 0; i < size; i++) {
+    fprintf(fd,"%c ", current_char+i);
+  }
+  fprintf(fd,"\n");
+
+  for (size_t i = 0; i < size; i++) { /* write board */
+    if (i+1==10) {
+      space_tampon =" ";
+    }
+    fprintf(fd,"%s%d ",space_tampon, i+1);
+    for (size_t j = 0; j < size; j++) {
+      fprintf(fd,"%c ", board->board[i][j]);
+    }
+    fprintf(fd,"\n");
+  }
+  fprintf(fd,"\n");
+  score_t score = board_score(board);
+  fprintf(fd,"Score: 'X' = %d, 'O' = %d\n\n", score.black, score.white);
+  return size*size;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//
