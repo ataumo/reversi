@@ -34,21 +34,21 @@ typedef struct {
 typedef struct board_t board_t;
 
 /* allocate memory needed to creat a board of size 'size' */
-board_t *board_alloc(const size_t size, const disc_t player);
+board_t *board_alloc (const size_t size, const disc_t player);
 
 /* free memory allocated to hold the board */
-void board_free(board_t *board);
+void board_free (board_t *board);
 
 /* init all the squares of the board as a starting game */
-board_t *board_init(const size_t size);
+board_t *board_init (const size_t size);
 
 /* perform a deep copy of the board structure */
-board_t *board_copy(const board_t *board);
+board_t *board_copy (const board_t *board);
 
 /* return size of the board */
-size_t board_size(const board_t *board);
+size_t board_size (const board_t *board);
 
 /* write on the file 'fd' the content of the given board */
-int board_print(const board_t *board, FILE *fd);
+int board_print (const board_t *board, FILE *fd);
 
 #endif /* BOARD_H */

@@ -166,12 +166,16 @@ main (int argc, char *argv[]) {
 			}
 		}
 	}
+	size_t size = 4;
+	board_t *board=board_init(size);
+	board_t *board_seconde = board_copy(board);
+	if (board==NULL) {
+		printf("NULL %d\n",board);
+	}
+	printf("%d\n", size);
 
-	board_t *board=board_alloc(10,BLACK_DISC);
-	size_t size = board_size(board);
-	board = board_init(size);
-	file = fopen("file.txt", "r+"); /* Reading file.. */
-	board_print(board,file);
+	file = fopen("file.txt", "w"); /* open file in mode writting.. */
+	board_print(board_seconde,file);
 
 	exit(EXIT_SUCCESS);
 }
