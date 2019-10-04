@@ -2,3 +2,4 @@
 reversi
 src/reversi
 src/*.o
+.DS_Store

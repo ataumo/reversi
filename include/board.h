@@ -48,6 +48,13 @@ board_t *board_copy (const board_t *board);
 /* return size of the board */
 size_t board_size (const board_t *board);
 
+/* set the current player */
+void board_set_player (board_t *board, disc_t new_player);
+
+/* set the given disc at the given position */
+void board_set (board_t *board, const disc_t disc,
+   const size_t row, const size_t column);
+
 /* write on the file 'fd' the content of the given board */
 int board_print (const board_t *board, FILE *fd);
 

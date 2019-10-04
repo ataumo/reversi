@@ -2,7 +2,7 @@
 EXE = reversi
 
 # Special rules and targets
-.PHONY: all build check clean help
+.PHONY: all build clean help
 
 # Rules and targets
 all: build
