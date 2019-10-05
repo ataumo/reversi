@@ -23,7 +23,9 @@ static board_t *file_parser(const char *filename) {
   FILE *file;
   file = fopen(filename, "r+");
   if (!file) {
-    fprintf(stderr, "error: failed to read file : %s\n", strerror(errno));
+    fprintf(stderr,
+            "reversi.c:file_parser(): error: failed to read file : %s\n",
+            strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -73,7 +75,8 @@ static board_t *file_parser(const char *filename) {
       if (!comment_status) {
         begin_board = true;
         if (!player) {
-          fprintf(stderr, "error: player is missing\n");
+          fprintf(stderr,
+                  "reversi.c:file_parser(): error: player is missing\n");
           exit(EXIT_FAILURE);
         }
         content = true;
@@ -94,10 +97,14 @@ static board_t *file_parser(const char *filename) {
       if (content) {
         if (current_column_count != size_column) {
           if (size_column > current_column_count) {
-            fprintf(stderr, "error: character is missed in line %d\n",
+            fprintf(stderr,
+                    "reversi.c:file_parser(): error: character is missed in "
+                    "line %d\n",
                     line_count);
           } else {
-            fprintf(stderr, "error: too much character in line %d\n",
+            fprintf(stderr,
+                    "reversi.c:file_parser(): error: too much character in "
+                    "line %d\n",
                     line_count);
           }
           exit(EXIT_FAILURE);
@@ -110,54 +117,54 @@ static board_t *file_parser(const char *filename) {
     default:
       if (current_char != ' ' && current_char != '\t' && !comment_status) {
         if (!player) {
-          fprintf(stderr, "error: player is incorrect\n");
+          fprintf(stderr,
+                  "reversi.c:file_parser(): error: player is incorrect\n");
         } else {
-          fprintf(stderr, "error: wrong character %c at line %d\n",
-                  current_char, line_count + 1);
+          fprintf(
+              stderr,
+              "reversi.c:file_parser(): error: wrong character %c at line %d\n",
+              current_char, line_count + 1);
         }
         exit(EXIT_FAILURE);
       }
       break;
     }
-    /*if (!comment_status) {
-      printf("%c", current_char);
-    }*/
   } /* end of while */
   if (size_raw != size_column) {
     if (size_raw > size_column) {
-      fprintf(stderr, "error: board has %d extra raw\n",
+      fprintf(stderr,
+              "reversi.c:file_parser(): error: board has %d extra raw\n",
               size_raw - size_column);
     } else {
-      fprintf(stderr, "error: board has %d missing raw\n",
+      fprintf(stderr,
+              "reversi.c:file_parser(): error: board has %d missing raw\n",
               size_column - size_raw);
     }
     exit(EXIT_FAILURE);
   }
   if (size_raw % 2 != 0) {
-    fprintf(stderr, "error: size of board need to be pair\n");
+    fprintf(stderr,
+            "reversi.c:file_parser(): error: size of board need to be pair\n");
     exit(EXIT_FAILURE);
   }
   if (size_raw / 2 < 1 || size_raw / 2 > 5) {
     if (size_raw == 0) {
-      fprintf(stderr, "error: missing board\n");
+      fprintf(stderr, "reversi.c:file_parser(): error: missing board\n");
     } else {
       fprintf(stderr,
-              "error: size of square need to be 2, 4, 6, 8 or 10, not %d\n",
+              "reversi.c:file_parser(): error: size of square need to be 2, 4, "
+              "6, 8 or 10, not %d\n",
               size_raw);
     }
     exit(EXIT_FAILURE);
   }
-
+  fclose(file);
   size_t size = size_raw;
-  // board_t *newboard = board_init(size);
   board_t *newboard = board_alloc(size, player);
-  // board_set_player(newboard, player);
+  /* set value of board */
   for (size_t i = 0; i < nbr_of_disc; i++) {
     board_set(newboard, tab_disc[i].player, tab_disc[i].x, tab_disc[i].y);
   }
-
-  fclose(file);
-  printf("EXIT_SUCCESS\n");
   return newboard;
 }
 
@@ -208,7 +215,8 @@ int main(int argc, char *argv[]) {
 
     case 's': /* 'size' option */
       if ((int_optarg < 1 || int_optarg > 5) && strlen(optarg) != 1) {
-        printf("Error: the argument of -s option should be between 1 and 5\n");
+        printf("reversi.c:main(): error: the argument of -s option should be "
+               "between 1 and 5\n");
         exit(EXIT_FAILURE);
       }
       board_size_num = int_optarg * 2;
@@ -218,7 +226,8 @@ int main(int argc, char *argv[]) {
       if (optarg != NULL) { /* if argument is given */
         int_optarg = atoi(optarg);
         if ((int_optarg != 1 && int_optarg != 0) && strlen(optarg) != 1) {
-          printf("Error: the argument of -b option should be 0 or 1\n");
+          printf("reversi.c:main(): error: the argument of -b option should be "
+                 "0 or 1\n");
           exit(EXIT_FAILURE);
         }
         tactic_b_player = int_optarg;
@@ -229,7 +238,8 @@ int main(int argc, char *argv[]) {
       if (optarg != NULL) { /* if argument is given */
         int_optarg = atoi(optarg);
         if ((int_optarg != 1 && int_optarg != 0) && strlen(optarg) != 1) {
-          printf("Error: the argument of -w option should be 0 or 1\n");
+          printf("reversi.c:main(): error: the argument of -w option should be "
+                 "0 or 1\n");
           exit(EXIT_FAILURE);
         }
         tactic_w_player = int_optarg;
@@ -258,7 +268,9 @@ int main(int argc, char *argv[]) {
       break;
 
     case ':': /* if argument is not given */
-      fprintf(stderr, "-%c commande must have an argument\n", optopt);
+      fprintf(stderr,
+              "reversi.c:main(): error: -%c commande must have an argument\n",
+              optopt);
       exit(EXIT_FAILURE);
       break;
 
@@ -277,12 +289,14 @@ int main(int argc, char *argv[]) {
     cpt_of_file++;
   }
   if (cpt_of_file > 1) { /* more than 1 file is given */
-    fprintf(stderr, "Error: You must to give 1 file for the contest mode\n");
+    fprintf(stderr, "reversi.c:main(): error: You must to give 1 file for the "
+                    "contest mode\n");
   } else {
     if (file_argument) { /* file argument is given */
       file = fopen(file_name, "r+");
       if (file == NULL) { /* The given argument is not a readable file */
-        fprintf(stderr, "Error opening the file: %s\n", strerror(errno));
+        fprintf(stderr, "reversi.c:main(): error: opening the file: %s\n",
+                strerror(errno));
         exit(EXIT_FAILURE);
       }
       if (contest_mode) { /* contest mode is enable */
@@ -290,16 +304,15 @@ int main(int argc, char *argv[]) {
         fclose(file);
       } else { /* normal mode */
         board_t *newboard = file_parser(file_name);
-        board_t *copy_board = board_copy(newboard);
         FILE *f;
         f = fopen("file.txt", "w");
-        board_print(copy_board, f);
+        board_print(newboard, f);
         fclose(file);
       }
     } else {
       if (contest_mode) { /* constes mode is enable */
-        fprintf(stderr,
-                "Error: contest mode is activated but no file is given\n");
+        fprintf(stderr, "reversi.c:main(): error: contest mode is activated "
+                        "but no file is given\n");
         exit(EXIT_FAILURE);
       }
     }

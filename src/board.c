@@ -15,18 +15,21 @@ struct board_t {
 board_t *board_alloc(const size_t size, const disc_t player) {
   board_t *board = malloc(sizeof(board_t));
   if (board == NULL) {
-    fprintf(stderr, "error: echec of malloc to allocate size of board_t\n");
+    fprintf(stderr, "board.c:board_alloc(): error: echec of malloc to "
+                    "allocate size of board_t\n");
     exit(EXIT_FAILURE);
   }
   board->board = malloc(size * sizeof(disc_t *));
   if (board->board == NULL) {
-    fprintf(stderr, "error: echec of malloc to allocate size of disc_t*\n");
+    fprintf(stderr, "board.c:board_alloc(): error: echec of malloc to allocate "
+                    "size of disc_t*\n");
     exit(EXIT_FAILURE);
   }
   for (size_t i = 0; i < size; i++) {
     board->board[i] = malloc(size * sizeof(disc_t));
     if (board->board[i] == NULL) {
-      fprintf(stderr, "error: echec of malloc to allocate size of disc_t\n");
+      fprintf(stderr, "board.c:board_alloc(): error: echec of malloc to "
+                      "allocate size of disc_t\n");
       exit(EXIT_FAILURE);
     }
   }
@@ -53,31 +56,32 @@ void board_free(board_t *board) {
 
 /* init all the squares of the board as a starting game */
 board_t *board_init(const size_t size) {
+  if (size % 2 != 0 || size / 2 < 1 || size / 2 > 5) {
+    fprintf(stderr, "board.c:board_init(): error: error of size (%d)\n", size);
+    exit(EXIT_FAILURE);
+  }
   board_t *board = board_alloc(size, BLACK_DISC); /* creat a new void board */
-  disc_t value_of_disc;
   for (size_t i = 0; i < size; i++) {
     for (size_t j = 0; j < size; j++) {
-      value_of_disc = EMPTY_DISC;
       if (i == (size / 2) - 1) /* if it's at the top of central square */
       {
         if (j == (size / 2) - 1) /* if it's at the left of central square */
         {
-          value_of_disc = WHITE_DISC;
+          board->board[i][j] = WHITE_DISC;
         } else if (j == (size / 2)) /* if it's at the right of central square */
         {
-          value_of_disc = BLACK_DISC;
+          board->board[i][j] = BLACK_DISC;
         }
       } else if (i == (size / 2)) /* if it's at the bottom of central square */
       {
         if (j == (size / 2) - 1) /* if it's at the left of central square */
         {
-          value_of_disc = BLACK_DISC;
+          board->board[i][j] = BLACK_DISC;
         } else if (j == (size / 2)) /* if it's at the right of central square */
         {
-          value_of_disc = WHITE_DISC;
+          board->board[i][j] = WHITE_DISC;
         }
       }
-      board->board[i][j] = value_of_disc;
     }
   }
   return board;
@@ -143,6 +147,7 @@ score_t board_score(const board_t *board) {
 
 /* write on the file 'fd' the content of the given board */
 int board_print(const board_t *board, FILE *fd) {
+  int nbr_char = 0; /* number of printed characters */
   if (fd == NULL) {
     return -1;
   }
@@ -150,29 +155,28 @@ int board_print(const board_t *board, FILE *fd) {
   disc_t current_player = board_player(board);
   char *space_tampon = "  ";
 
-  fprintf(fd, "\n%c player's turn.\n", current_player);
-  fprintf(fd, "\n    ");
+  nbr_char += fprintf(fd, "\n%c player's turn.\n", current_player);
+  nbr_char += fprintf(fd, "\n    ");
   char current_char = 'A';
   for (size_t i = 0; i < size; i++) {
-    fprintf(fd, "%c ", (char)(current_char + i));
+    nbr_char += fprintf(fd, "%c ", (char)(current_char + i));
   }
-  fprintf(fd, "\n");
+  nbr_char += fprintf(fd, "\n");
 
   for (size_t i = 0; i < size; i++) /* write board */
   {
     if (i + 1 == 10) {
       space_tampon = " "; /* reduce two space to one space */
     }
-    fprintf(fd, "%s%lu ", space_tampon, i + 1);
+    nbr_char += fprintf(fd, "%s%lu ", space_tampon, i + 1);
     for (size_t j = 0; j < size; j++) {
-      fprintf(fd, "%c ", board->board[i][j]);
+      nbr_char += fprintf(fd, "%c ", board->board[i][j]);
     }
-    fprintf(fd, "\n");
+    nbr_char += fprintf(fd, "\n");
   }
-  fprintf(fd, "\n");
+  nbr_char += fprintf(fd, "\n");
   score_t score = board_score(board);
-  fprintf(fd, "Score: 'X' = %d, 'O' = %d\n\n", score.black, score.white);
-  return size * size;
+  nbr_char +=
+      fprintf(fd, "Score: 'X' = %d, 'O' = %d\n\n", score.black, score.white);
+  return nbr_char;
 }
-
-//
