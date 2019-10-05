@@ -165,6 +165,7 @@ static board_t *file_parser(const char *filename) {
   for (size_t i = 0; i < nbr_of_disc; i++) {
     board_set(newboard, tab_disc[i].player, tab_disc[i].x, tab_disc[i].y);
   }
+  free(tab_disc);
   return newboard;
 }
 
@@ -304,10 +305,6 @@ int main(int argc, char *argv[]) {
         fclose(file);
       } else { /* normal mode */
         board_t *newboard = file_parser(file_name);
-        FILE *f;
-        f = fopen("file.txt", "w");
-        board_print(newboard, f);
-        fclose(file);
       }
     } else {
       if (contest_mode) { /* constes mode is enable */

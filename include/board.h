@@ -9,7 +9,7 @@
 #define MAX_BOARD_SIZE 10
 
 /* Board discs */
-typedef enum{
+typedef enum {
   BLACK_DISC = 'X',
   WHITE_DISC = 'O',
   EMPTY_DISC = '_',
@@ -17,8 +17,7 @@ typedef enum{
 } disc_t;
 
 /* A move in the reversi game */
-typedef struct
-{
+typedef struct {
   size_t row;
   size_t column;
 } move_t;
@@ -29,33 +28,38 @@ typedef struct {
   unsigned short white;
 } score_t;
 
-
 /* Reversi board (forwards declaration to hide the implementation) */
 typedef struct board_t board_t;
 
 /* allocate memory needed to creat a board of size 'size' */
-board_t *board_alloc (const size_t size, const disc_t player);
+board_t *board_alloc(const size_t size, const disc_t player);
 
 /* free memory allocated to hold the board */
-void board_free (board_t *board);
+void board_free(board_t *board);
 
 /* init all the squares of the board as a starting game */
-board_t *board_init (const size_t size);
+board_t *board_init(const size_t size);
 
 /* perform a deep copy of the board structure */
-board_t *board_copy (const board_t *board);
+board_t *board_copy(const board_t *board);
 
 /* return size of the board */
-size_t board_size (const board_t *board);
+size_t board_size(const board_t *board);
+
+/* get current player */
+disc_t board_player(const board_t *board);
 
 /* set the current player */
-void board_set_player (board_t *board, disc_t new_player);
+void board_set_player(board_t *board, disc_t new_player);
+
+/* get the content of the square */
+disc_t board_get(const board_t *board, const size_t row, const size_t column);
 
 /* set the given disc at the given position */
-void board_set (board_t *board, const disc_t disc,
-   const size_t row, const size_t column);
+void board_set(board_t *board, const disc_t disc, const size_t row,
+               const size_t column);
 
 /* write on the file 'fd' the content of the given board */
-int board_print (const board_t *board, FILE *fd);
+int board_print(const board_t *board, FILE *fd);
 
 #endif /* BOARD_H */

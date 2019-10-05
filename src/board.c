@@ -57,7 +57,7 @@ void board_free(board_t *board) {
 /* init all the squares of the board as a starting game */
 board_t *board_init(const size_t size) {
   if (size % 2 != 0 || size / 2 < 1 || size / 2 > 5) {
-    fprintf(stderr, "board.c:board_init(): error: error of size (%d)\n", size);
+    fprintf(stderr, "board.c:board_init(): error: error of size (%zu)\n", size);
     exit(EXIT_FAILURE);
   }
   board_t *board = board_alloc(size, BLACK_DISC); /* creat a new void board */
