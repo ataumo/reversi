@@ -52,6 +52,8 @@ disc_t board_player(const board_t *board);
 /* set the current player */
 void board_set_player(board_t *board, disc_t new_player);
 
+// bonjour
+
 /* get the content of the square */
 disc_t board_get(const board_t *board, const size_t row, const size_t column);
 
