@@ -33,7 +33,7 @@ static board_t *file_parser(const char *filename) {
   bool content = false;
 
   /* int type */
-  int column_count = 0;
+  int current_column_count = 0;
   int line_count = 0;
   int size_column = 0;
   int size_raw = 0;
@@ -62,10 +62,10 @@ static board_t *file_parser(const char *filename) {
           content = true;
           /* keep coordinate in tab_disc */
           tab_disc[nbr_of_disc].player = current_char;
-          tab_disc[nbr_of_disc].x = column_count;
+          tab_disc[nbr_of_disc].x = current_column_count;
           tab_disc[nbr_of_disc].y = size_raw;
           nbr_of_disc++;
-          column_count++;
+          current_column_count++;
         }
       }
       break;
@@ -77,7 +77,7 @@ static board_t *file_parser(const char *filename) {
           exit(EXIT_FAILURE);
         }
         content = true;
-        column_count++;
+        current_column_count++;
       }
       break;
     case EOF:
@@ -88,63 +88,71 @@ static board_t *file_parser(const char *filename) {
           size_raw++;
         }
         if (size_column == 0) {
-          size_column = column_count;
+          size_column = current_column_count;
         }
       }
       if (content) {
-        if (size_column != column_count) {
-          fprintf(stderr, "fail\n");
+        if (current_column_count != size_column) {
+          if (size_column > current_column_count) {
+            fprintf(stderr, "error: character is missed in line %d\n",
+                    line_count);
+          } else {
+            fprintf(stderr, "error: too much character in line %d\n",
+                    line_count);
+          }
           exit(EXIT_FAILURE);
         }
       }
-      column_count = 0;
+      current_column_count = 0;
       comment_status = false;
       content = false;
       break;
     default:
       if (current_char != ' ' && current_char != '\t' && !comment_status) {
-        printf("(%c)", current_char);
         if (!player) {
           fprintf(stderr, "error: player is incorrect\n");
-          exit(EXIT_FAILURE);
+        } else {
+          fprintf(stderr, "error: wrong character %c at line %d\n",
+                  current_char, line_count + 1);
         }
-        fprintf(stderr, "error: wrong character %c at line %d\n", current_char,
-                line_count + 1);
         exit(EXIT_FAILURE);
       }
       break;
     }
-    if (!comment_status) {
+    /*if (!comment_status) {
       printf("%c", current_char);
-    }
-  }
-  printf("col=%d raw=%d\n", size_column, size_raw);
+    }*/
+  } /* end of while */
   if (size_raw != size_column) {
     if (size_raw > size_column) {
-      fprintf(stderr, "board as %d extra raw\n", size_raw - size_column);
+      fprintf(stderr, "error: board has %d extra raw\n",
+              size_raw - size_column);
+    } else {
+      fprintf(stderr, "error: board has %d missing raw\n",
+              size_column - size_raw);
     }
-    printf("Error: size of square %d %d\n", size_raw, size_column);
     exit(EXIT_FAILURE);
   }
   if (size_raw % 2 != 0) {
-    printf("error: row %d is malformed\n", size_raw);
+    fprintf(stderr, "error: size of board need to be pair\n");
     exit(EXIT_FAILURE);
   }
-  if (size_raw / 2 < 1 || size_raw / 2 > 10) {
+  if (size_raw / 2 < 1 || size_raw / 2 > 5) {
     if (size_raw == 0) {
-      printf("error: missing board\n");
-      exit(EXIT_FAILURE);
+      fprintf(stderr, "error: missing board\n");
+    } else {
+      fprintf(stderr,
+              "error: size of square need to be 2, 4, 6, 8 or 10, not %d\n",
+              size_raw);
     }
-    printf("->Error: size of square %d %d\n", size_raw, size_column);
     exit(EXIT_FAILURE);
   }
-  printf("player : %c\n", player);
 
   size_t size = size_raw;
-  board_t *newboard = board_init(size);
-  board_set_player(newboard, player);
+  // board_t *newboard = board_init(size);
+  board_t *newboard = board_alloc(size, player);
+  // board_set_player(newboard, player);
   for (size_t i = 0; i < nbr_of_disc; i++) {
-    printf("%c, %d, %d\n", tab_disc[i].player, tab_disc[i].x, tab_disc[i].y);
     board_set(newboard, tab_disc[i].player, tab_disc[i].x, tab_disc[i].y);
   }
 
@@ -282,6 +290,10 @@ int main(int argc, char *argv[]) {
         fclose(file);
       } else { /* normal mode */
         board_t *newboard = file_parser(file_name);
+        board_t *copy_board = board_copy(newboard);
+        FILE *f;
+        f = fopen("file.txt", "w");
+        board_print(copy_board, f);
         fclose(file);
       }
     } else {
