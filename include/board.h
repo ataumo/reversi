@@ -83,4 +83,7 @@ bool board_is_move_valid(const board_t *board, const move_t move);
 /* count the number of possible moves */
 size_t board_count_player_moves(board_t *board);
 
+/* count the number of opponent's possible moves */
+size_t board_count_opponent_moves(board_t *board);
+
 #endif /* BOARD_H */
