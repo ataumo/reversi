@@ -4,6 +4,7 @@ EXE = reversi
 # Usual compilation flags
 CFLAGS = -std=c11 -Wall -Wextra -g -O2
 CPPFLAGS = -I../include -DDEBUG
+LDFLAGS =
 
 # Special rules and targets
 .PHONY: all clean help
@@ -12,7 +13,7 @@ CPPFLAGS = -I../include -DDEBUG
 all: reversi
 
 reversi: reversi.o board.o
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 reversi.o: reversi.c reversi.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<

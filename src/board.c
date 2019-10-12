@@ -19,11 +19,9 @@ struct board_t {
 /* row=[0,size-1] column=[0,size-1] */
 static bitboard_t set_bitboard(const size_t size, const size_t row,
                                const size_t column) {
-  bitboard_t new_bitboard;
-  int power = size * row + column;
-  new_bitboard = 1;
-  new_bitboard = new_bitboard << power;
-  return new_bitboard;
+  bitboard_t new_bitboard = 1;
+  int power = (size * row + column);
+  return new_bitboard << power;
 }
 
 static bitboard_t shift_north(const size_t size, const bitboard_t bitboard) {
@@ -181,8 +179,7 @@ board_t *board_copy(const board_t *board) {
   }
   size_t size_copy = board->size;     /* get size */
   disc_t player_copy = board->player; /* get player */
-  board_t *board_copy =
-      board_alloc(size_copy, player_copy); /* alloc board copy */
+  board_t *board_copy = board_alloc(size_copy, player_copy);
   board_copy->black = board->black;
   board_copy->white = board->white;
   board_copy->moves = board->moves;
@@ -198,17 +195,18 @@ disc_t board_player(const board_t *board) { return board->player; }
 
 /* set the current player */
 void board_set_player(board_t *board, disc_t new_player) {
-  if (new_player == BLACK_DISC || new_player == WHITE_DISC) {
+  if (new_player != HINT_DISC) {
     board->player = new_player;
+  } else {
+    fprintf(stderr, "board.c:board_set_player(): error: you try to set player "
+                    "with EMPTY_DISC\n");
   }
-  fprintf(stderr, "board.c:board_set_player(): error: you try to set player "
-                  "with something different to X and O on the board\n");
 }
 
 /* get the content of the square */
 disc_t board_get(const board_t *board, const size_t row, const size_t column) {
   if (board != NULL) {
-    size_t size = board_size(board);
+    size_t size = board->size;
     bitboard_t current_bitboard = set_bitboard(size, row, column);
     if ((board->moves) & current_bitboard) {
       return HINT_DISC;
@@ -227,7 +225,7 @@ disc_t board_get(const board_t *board, const size_t row, const size_t column) {
 void board_set(board_t *board, const disc_t disc, const size_t row,
                const size_t column) {
   if (board != NULL) {
-    size_t size = board_size(board);
+    size_t size = board->size;
     if (row < size && column < size) {
       bitboard_t current_bitboard = set_bitboard(size, row, column);
       switch (disc) {
@@ -256,6 +254,7 @@ void board_set(board_t *board, const disc_t disc, const size_t row,
   }
 }
 
+/* convert a bit sequence 64bit to 128bit */
 bitboard_t _64_to_128(bitboard_t i) { return ((i << 64) | i); }
 
 /* count the number of bits set to 1 */
@@ -299,24 +298,22 @@ bool board_is_move_valid(const board_t *board, const move_t move) {
   return (board->moves) & bitboard_move;
 }
 
-/* find trace until the current player */
+/* find all trace until the current player */
 static bitboard_t trace_move(board_t *board, const move_t move) {
-  disc_t current_player = board_player(board);
+  disc_t current_player = board->player;
   size_t size = board->size;
-  /* init with BLACK_DISC player */
-  bitboard_t player = board->black;
+  bitboard_t player = board->black; /* init with BLACK_DISC player */
   bitboard_t opponent = board->white;
   if (current_player == WHITE_DISC) {
     player = board->white;
     opponent = board->black;
   }
-  bitboard_t start = set_bitboard(size, move.row, move.column);
 
+  bitboard_t start = set_bitboard(size, move.row, move.column);
   bitboard_t trace;
   bitboard_t final_trace = 0;
   bitboard_t shift;
 
-  /* south trace */
   for (size_t i = 0; i < 8; i++) {
     trace = start;
     shift = shift_func[i](size, start);
@@ -337,14 +334,16 @@ bool board_play(board_t *board, const move_t move) {
     return 0;
   }
   bitboard_t trace = trace_move(board, move); /* get the trace of direction */
-  disc_t current_player = board_player(board);
+  disc_t current_player = board->player;
   size_t size = board->size;
   if (current_player == BLACK_DISC) {
+    /* BLACK_DISC player plays */
     board->white &= ~trace;
     board->black |= trace;
     board->player = WHITE_DISC;
     board->moves = compute_moves(size, board->white, board->black);
   } else {
+    /* WHITE_DISC player plays */
     board->black &= ~trace;
     board->white |= trace;
     board->player = BLACK_DISC;
@@ -373,7 +372,7 @@ move_t board_next_move(board_t *board) {
   if (board->next_move == 0) {
     board->next_move = board->moves;
   }
-  size_t size = board_size(board);               /* get the size of board */
+  size_t size = board->size;                     /* get the size of board */
   bitboard_t possibles_moves = board->next_move; /* get possibles moves */
   if (size < 10) {
     /* if possible_moves is a 64bit number */
@@ -392,16 +391,16 @@ int board_print(const board_t *board, FILE *fd) {
   if (fd == NULL || board == NULL) {
     return -1;
   }
-  int nbr_char = 0;                /* number of printed characters */
-  size_t size = board_size(board); /* get size */
-  disc_t current_player = board_player(board); /* get player */
-  score_t score = board_score(board);          /* set the score */
-  char *space_tampon = "  ";                   /* set the initial space */
-  char current_char = 'A';                     /* set the initial character */
+  int nbr_char = 0;                      /* number of printed characters */
+  size_t size = board->size;             /* get size */
+  disc_t current_player = board->player; /* get player */
+  score_t score = board_score(board);    /* set the score */
+  char *space_tampon = "  ";             /* set the initial space */
+  char current_char = 'A';               /* set the initial character */
   nbr_char += fprintf(fd, "\n%c player's turn.\n", current_player);
   nbr_char += fprintf(fd, "\n    ");
 
-  for (size_t i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; i++) { /* write A B C D... */
     nbr_char += fprintf(fd, "%c ", (char)(current_char + i));
   }
   nbr_char += fprintf(fd, "\n");
@@ -421,18 +420,4 @@ int board_print(const board_t *board, FILE *fd) {
   nbr_char +=
       fprintf(fd, "Score: 'X' = %d, 'O' = %d\n\n", score.black, score.white);
   return nbr_char;
-}
-
-void test_board_c() {
-  size_t size = 0;
-  board_t *board;
-  for (size_t i = 1; i <= 5; i++) {
-    size = i * 2;
-    board = board_init(size);
-    board_print(board, stdout);
-    while (board->player != EMPTY_DISC) {
-      board_play(board, board_next_move(board));
-      board_print(board, stdout);
-    }
-  }
 }
