@@ -32,94 +32,63 @@ static bitboard_t shift_north(const size_t size, const bitboard_t bitboard) {
 
 static bitboard_t shift_south(const size_t size, const bitboard_t bitboard) {
   bitboard_t bitboard_bottom;
-  bitboard_t new_bitboard = 0;
-  if (size == 2) {
-    new_bitboard = (bitboard << size) & ~0x30;
-    /* it is exa code of bitboard to define 2 bit 1 on the out bottom
-     * part of board 2x2 */
-  } else if (size == 4) {
-    new_bitboard = (bitboard << size) & ~0xF0000;
-    /* it is exa code of bitboard to define 4 bit 1 on the out bottom
-     * part of board 4x4 */
-  } else if (size == 6) {
+  switch (size) {
+  case 2:
+    return (bitboard << size) & ~0x30;
+  case 4:
+    return (bitboard << size) & ~0xF0000;
+  case 6:
     bitboard_bottom = 0x3F;
-    new_bitboard = (bitboard << size) & ~(bitboard_bottom << 36);
-    /* it is exa code of bitboard to define 6 bit 1 on the out bottom
-     * part of board 6x6 */
-  } else if (size == 8) {
+    return (bitboard << size) & ~(bitboard_bottom << 36);
+  case 8:
     bitboard_bottom = 0xFF;
-    new_bitboard = (bitboard << size) & ~(bitboard_bottom << 64);
-    /* it is exa code of bitboard to define 8 bit 1 on the out bottom
-     * part of board 8x8 */
-  } else if (size == 10) {
+    return (bitboard << size) & ~(bitboard_bottom << 64);
+  case 10:
     bitboard_bottom = 0x3FF;
-    new_bitboard = (bitboard << size) & ~(bitboard_bottom << 100);
-    /* it is exa code of bitboard to define 10 bit 1 on the out bottom
-     * part of board 10x10 */
+    return (bitboard << size) & ~(bitboard_bottom << 100);
   }
-  return new_bitboard;
+  return -1;
 }
 
 static bitboard_t shift_west(const size_t size, const bitboard_t bitboard) {
-  bitboard_t new_bitboard = 0;
-  bitboard_t bitboard_right = 0;
-  if (size == 2) {
-    new_bitboard = (bitboard >> 1) & ~(0xA);
-    /*0xA is exa code of bitboard to define 2 bit 1 on the right
-     * part of board 2x2*/
-  } else if (size == 4) {
-    new_bitboard = (bitboard >> 1) & ~(0x8888);
-    /*0x8888 is exa code of bitboard to define 4 bit 1 on the right
-     * part of board 4x4*/
-  } else if (size == 6) {
-    new_bitboard = (bitboard >> 1) & ~(0x820820820);
-    /*0x820820820 is exa code of bitboard to define 6 bit 1 on the right
-     * part of board 6x6*/
-  } else if (size == 8) {
-    new_bitboard = (bitboard >> 1) & ~(0x8080808080808080);
-    /*0x8080808080808080 is exa code of bitboard to define 8 bit 1 on the right
-     * part of board 8x8*/
-  } else if (size == 10) {
+  bitboard_t bitboard_right;
+  switch (size) {
+  case 2:
+    return (bitboard >> 1) & ~(0xA);
+  case 4:
+    return (bitboard >> 1) & ~(0x8888);
+  case 6:
+    return (bitboard >> 1) & ~(0x820820820);
+  case 8:
+    return (bitboard >> 1) & ~(0x8080808080808080);
+  case 10:
     bitboard_right = 0x2008020080200;
-    new_bitboard = (bitboard >> 1) & ~((bitboard_right << 50) | bitboard_right);
-    /*0x2008020080200 is exa code of bitboard to define 5 bit 1 on the right
-     * part of board 10x10*/
+    return (bitboard >> 1) & ~((bitboard_right << 50) | bitboard_right);
   }
-  return new_bitboard;
+  return -1;
 }
 
 static bitboard_t shift_est(const size_t size, const bitboard_t bitboard) {
-  bitboard_t new_bitboard = 0;
-  bitboard_t bitboard_bottom = 0;
-  bitboard_t bitboard_left = 0;
-  if (size == 2) {
-    new_bitboard = (bitboard << 1) & ~0x5 & ~0x30;
-    /* 0x5 is exa code of bitboard to define 2 bit at 1 on the left part of
-     * board 2x2*/
-  } else if (size == 4) {
-    new_bitboard = (bitboard << 1) & ~0x1111 & ~0xF0000;
-    /* 0x1111 is exa code of bitboard to define 4 bit at 1 on the left part of
-     * board 4x4*/
-  } else if (size == 6) {
+  bitboard_t bitboard_left;
+  bitboard_t bitboard_bottom;
+  switch (size) {
+  case 2:
+    return (bitboard << 1) & ~0x5 & ~0x30;
+  case 4:
+    return (bitboard << 1) & ~0x1111 & ~0xF0000;
+  case 6:
     bitboard_bottom = 0x3F;
-    new_bitboard = (bitboard << 1) & ~0x41041041 & ~(bitboard_bottom << 36);
-    /* 0x41041041 is exa code of bitboard to define 6 bit at 1 on the left part
-     * of board 6x6*/
-  } else if (size == 8) {
+    return (bitboard << 1) & ~0x41041041 & ~(bitboard_bottom << 36);
+  case 8:
     bitboard_bottom = 0xFF;
-    new_bitboard =
-        (bitboard << 1) & ~(0x101010101010101) & ~(bitboard_bottom << 64);
-    /* 0x101010101010101 is exa code of bitboard to define 8 bit at 1 on the
-     * left part of board 8x8*/
-  } else if (size == 10) {
+    return (bitboard << 1) & ~(0x101010101010101) & ~(bitboard_bottom << 64);
+  case 10:
     bitboard_left = 0x10040100401;
     bitboard_bottom = 0x3FF;
-    new_bitboard = (bitboard << 1) & ~((bitboard_left << 50) | bitboard_left) &
-                   ~(bitboard_bottom << 100);
-    /* 0x10040100401 is exa code of bitboard to define 5 bit at 1 on the left
-     * part of board 10x10*/
+    return (bitboard << 1) & ~((bitboard_left << 50) | bitboard_left) &
+           ~(bitboard_bottom << 100);
   }
-  return new_bitboard;
+  return -1;
 }
 
 static bitboard_t shift_nw(const size_t size, const bitboard_t bitboard) {
@@ -138,6 +107,7 @@ static bitboard_t shift_se(const size_t size, const bitboard_t bitboard) {
   return shift_est(size, shift_south(size, bitboard));
 }
 
+/* array of shift functions */
 static bitboard_t (*shift_func[8])(const size_t size,
                                    const bitboard_t bitboard) = {
     shift_north, shift_south, shift_west, shift_est,
@@ -185,15 +155,18 @@ void board_free(board_t *board) {
 /* init all the squares of the board as a starting game */
 board_t *board_init(const size_t size) {
   /* verification of size */
-  if (size % 2 != 0 || size / 2 < 1 || size / 2 > 5) {
+  if (size % 2 != 0 || size < MIN_BOARD_SIZE || size > MAX_BOARD_SIZE) {
     fprintf(stderr, "board.c:board_init(): error: error of size (%zu)\n", size);
     return NULL;
   }
   board_t *board = board_alloc(size, BLACK_DISC); /* creat a new void board */
+  /* set white disc on the board */
   board->white = set_bitboard(size, (size / 2) - 1, (size / 2) - 1) |
                  set_bitboard(size, size / 2, size / 2);
+  /* set black disc on the board */
   board->black = set_bitboard(size, (size / 2) - 1, size / 2) |
                  set_bitboard(size, size / 2, (size / 2) - 1);
+  /* init possibles moves */
   board->moves = compute_moves(size, board->black, board->white);
   if (!board->moves) { /* if move is not possible */
     board->player = EMPTY_DISC;
@@ -206,9 +179,10 @@ board_t *board_copy(const board_t *board) {
   if (board == NULL) {
     return NULL;
   }
-  size_t size_copy = board->size;
-  disc_t player_copy = board->player;
-  board_t *board_copy = board_alloc(size_copy, player_copy);
+  size_t size_copy = board->size;     /* get size */
+  disc_t player_copy = board->player; /* get player */
+  board_t *board_copy =
+      board_alloc(size_copy, player_copy); /* alloc board copy */
   board_copy->black = board->black;
   board_copy->white = board->white;
   board_copy->moves = board->moves;
@@ -303,11 +277,12 @@ score_t board_score(const board_t *board) {
   return score;
 }
 
-/* count the number of possible moves */
+/* count the number of player's possible moves */
 size_t board_count_player_moves(board_t *board) {
   return bitboard_popcount(board->moves);
 }
 
+/* count the number of opponent's possible moves */
 size_t board_count_opponent_moves(board_t *board) {
   if (board->player == BLACK_DISC) {
     return bitboard_popcount(
@@ -361,8 +336,7 @@ bool board_play(board_t *board, const move_t move) {
   if (!board_is_move_valid(board, move)) {
     return 0;
   }
-  /* get the trace of direction */
-  bitboard_t trace = trace_move(board, move);
+  bitboard_t trace = trace_move(board, move); /* get the trace of direction */
   disc_t current_player = board_player(board);
   size_t size = board->size;
   if (current_player == BLACK_DISC) {
@@ -402,12 +376,11 @@ move_t board_next_move(board_t *board) {
   size_t size = board_size(board);               /* get the size of board */
   bitboard_t possibles_moves = board->next_move; /* get possibles moves */
   if (size < 10) {
-    /* if possible moves is a 64bit number */
+    /* if possible_moves is a 64bit number */
     nbr_tz = __builtin_ctzll(possibles_moves);
   } else {
     nbr_tz = bitboard_popcount((possibles_moves - 1) ^ possibles_moves) - 1;
   }
-  printf("nr : %u\n", nbr_tz);
   board->next_move &= possibles_moves - 1; /* remove the position */
   move.row = nbr_tz / size;                /* compute row */
   move.column = nbr_tz % size;             /* compute column */
@@ -423,7 +396,6 @@ int board_print(const board_t *board, FILE *fd) {
   size_t size = board_size(board); /* get size */
   disc_t current_player = board_player(board); /* get player */
   score_t score = board_score(board);          /* set the score */
-  board_t *copy_board = board_copy(board);     /* do a copy of board */
   char *space_tampon = "  ";                   /* set the initial space */
   char current_char = 'A';                     /* set the initial character */
   nbr_char += fprintf(fd, "\n%c player's turn.\n", current_player);
@@ -441,7 +413,7 @@ int board_print(const board_t *board, FILE *fd) {
     }
     nbr_char += fprintf(fd, "%s%lu ", space_tampon, i + 1);
     for (size_t j = 0; j < size; j++) {
-      nbr_char += fprintf(fd, "%c ", board_get(copy_board, i, j));
+      nbr_char += fprintf(fd, "%c ", board_get(board, i, j));
     }
     nbr_char += fprintf(fd, "\n");
   }
@@ -452,30 +424,15 @@ int board_print(const board_t *board, FILE *fd) {
 }
 
 void test_board_c() {
-  // Calculate the time taken by fun()
-  board_t *board = board_init(10);
-  clock_t t;
-  double time_taken;
-
-  /* first test */
-  printf("%u\n", bitboard_popcount(board->black));
-  t = clock();
-  for (size_t i = 0; i < 10000000; i++) {
-    bitboard_popcount(board->black);
+  size_t size = 0;
+  board_t *board;
+  for (size_t i = 1; i <= 5; i++) {
+    size = i * 2;
+    board = board_init(size);
+    board_print(board, stdout);
+    while (board->player != EMPTY_DISC) {
+      board_play(board, board_next_move(board));
+      board_print(board, stdout);
+    }
   }
-
-  t = clock() - t;
-  time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
-  printf("fun() took %f seconds to execute \n", time_taken);
-
-  /* second test */
-  printf("%u\n", __builtin_popcount(board->black));
-  t = clock();
-  for (size_t i = 0; i < 10000000; i++) {
-    __builtin_popcount(board->black);
-  }
-
-  t = clock() - t;
-  time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
-  printf("fun() took %f seconds to execute \n", time_taken);
 }
