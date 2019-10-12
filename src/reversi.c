@@ -33,6 +33,7 @@ static board_t *file_parser(const char *filename) {
   bool begin_board = false;
   bool comment_status = false;
   bool content = false;
+  bool player_is_saved = false;
 
   /* int type */
   int current_column_count = 0;
@@ -43,7 +44,7 @@ static board_t *file_parser(const char *filename) {
   /* other type */
   char current_char = '\0';
   size_t nbr_of_disc = 0;
-  disc_t player = NULL;
+  disc_t player;
   coor_disc tab_disc[100];
 
   while (current_char != EOF) {
@@ -56,9 +57,10 @@ static board_t *file_parser(const char *filename) {
       break;
     case 'O':
     case 'X':
-      if (!comment_status) { /* not comment line */
-        if (!player) {       /* player is not saved */
+      if (!comment_status) {    /* not comment line */
+        if (!player_is_saved) { /* player is not saved */
           player = current_char;
+          player_is_saved = true;
         } else {
           begin_board = true;
           content = true;
@@ -74,7 +76,7 @@ static board_t *file_parser(const char *filename) {
     case '_': /* beginning of board */
       if (!comment_status) {
         begin_board = true;
-        if (!player) {
+        if (!player_is_saved) {
           fprintf(stderr,
                   "reversi.c:file_parser(): error: player is missing\n");
           exit(EXIT_FAILURE);
@@ -116,7 +118,7 @@ static board_t *file_parser(const char *filename) {
       break;
     default:
       if (current_char != ' ' && current_char != '\t' && !comment_status) {
-        if (!player) {
+        if (!player_is_saved) {
           fprintf(stderr,
                   "reversi.c:file_parser(): error: player is incorrect\n");
         } else {
@@ -165,7 +167,6 @@ static board_t *file_parser(const char *filename) {
   for (size_t i = 0; i < nbr_of_disc; i++) {
     board_set(newboard, tab_disc[i].player, tab_disc[i].x, tab_disc[i].y);
   }
-  free(tab_disc);
   return newboard;
 }
 
@@ -183,6 +184,9 @@ static void print_usage() {
 }
 
 int main(int argc, char *argv[]) {
+  /* test */
+  test_board_c();
+  /***/
 
   const struct option longopts[] = {{"size", required_argument, NULL, 's'},
                                     {"black-ai", optional_argument, NULL, 'b'},
@@ -305,6 +309,10 @@ int main(int argc, char *argv[]) {
         fclose(file);
       } else { /* normal mode */
         board_t *newboard = file_parser(file_name);
+        board_print(newboard, stdout);
+        score_t score;
+        score = board_score(newboard);
+        printf("black = %d, white = %d\n", score.black, score.white);
       }
     } else {
       if (contest_mode) { /* constes mode is enable */

@@ -1,98 +1,218 @@
 #include "board.h"
 
 #include <err.h>
+#include <stdbool.h>
 #include <string.h>
+#include <time.h>
 
 /* Internal board_t structure (hidden from the outside) */
 struct board_t {
   size_t size;
   disc_t player;
-  disc_t **board;
+  bitboard_t black;
+  bitboard_t white;
+  bitboard_t moves;
+  bitboard_t next_move;
 };
+
+/* set the bit to 1 at row, column on the bitboard */
+/* row=[0,size-1] column=[0,size-1] */
+static bitboard_t set_bitboard(const size_t size, const size_t row,
+                               const size_t column) {
+  bitboard_t new_bitboard;
+  int power = size * row + column;
+  new_bitboard = 1;
+  new_bitboard = new_bitboard << power;
+  return new_bitboard;
+}
+
+static bitboard_t shift_north(const size_t size, const bitboard_t bitboard) {
+  return (bitboard >> size);
+}
+
+static bitboard_t shift_south(const size_t size, const bitboard_t bitboard) {
+  bitboard_t bitboard_bottom;
+  bitboard_t new_bitboard = 0;
+  if (size == 2) {
+    new_bitboard = (bitboard << size) & ~0x30;
+    /* it is exa code of bitboard to define 2 bit 1 on the out bottom
+     * part of board 2x2 */
+  } else if (size == 4) {
+    new_bitboard = (bitboard << size) & ~0xF0000;
+    /* it is exa code of bitboard to define 4 bit 1 on the out bottom
+     * part of board 4x4 */
+  } else if (size == 6) {
+    bitboard_bottom = 0x3F;
+    new_bitboard = (bitboard << size) & ~(bitboard_bottom << 36);
+    /* it is exa code of bitboard to define 6 bit 1 on the out bottom
+     * part of board 6x6 */
+  } else if (size == 8) {
+    bitboard_bottom = 0xFF;
+    new_bitboard = (bitboard << size) & ~(bitboard_bottom << 64);
+    /* it is exa code of bitboard to define 8 bit 1 on the out bottom
+     * part of board 8x8 */
+  } else if (size == 10) {
+    bitboard_bottom = 0x3FF;
+    new_bitboard = (bitboard << size) & ~(bitboard_bottom << 100);
+    /* it is exa code of bitboard to define 10 bit 1 on the out bottom
+     * part of board 10x10 */
+  }
+  return new_bitboard;
+}
+
+static bitboard_t shift_west(const size_t size, const bitboard_t bitboard) {
+  bitboard_t new_bitboard = 0;
+  bitboard_t bitboard_right = 0;
+  if (size == 2) {
+    new_bitboard = (bitboard >> 1) & ~(0xA);
+    /*0xA is exa code of bitboard to define 2 bit 1 on the right
+     * part of board 2x2*/
+  } else if (size == 4) {
+    new_bitboard = (bitboard >> 1) & ~(0x8888);
+    /*0x8888 is exa code of bitboard to define 4 bit 1 on the right
+     * part of board 4x4*/
+  } else if (size == 6) {
+    new_bitboard = (bitboard >> 1) & ~(0x820820820);
+    /*0x820820820 is exa code of bitboard to define 6 bit 1 on the right
+     * part of board 6x6*/
+  } else if (size == 8) {
+    new_bitboard = (bitboard >> 1) & ~(0x8080808080808080);
+    /*0x8080808080808080 is exa code of bitboard to define 8 bit 1 on the right
+     * part of board 8x8*/
+  } else if (size == 10) {
+    bitboard_right = 0x2008020080200;
+    new_bitboard = (bitboard >> 1) & ~((bitboard_right << 50) | bitboard_right);
+    /*0x2008020080200 is exa code of bitboard to define 5 bit 1 on the right
+     * part of board 10x10*/
+  }
+  return new_bitboard;
+}
+
+static bitboard_t shift_est(const size_t size, const bitboard_t bitboard) {
+  bitboard_t new_bitboard = 0;
+  bitboard_t bitboard_bottom = 0;
+  bitboard_t bitboard_left = 0;
+  if (size == 2) {
+    new_bitboard = (bitboard << 1) & ~0x5 & ~0x30;
+    /* 0x5 is exa code of bitboard to define 2 bit at 1 on the left part of
+     * board 2x2*/
+  } else if (size == 4) {
+    new_bitboard = (bitboard << 1) & ~0x1111 & ~0xF0000;
+    /* 0x1111 is exa code of bitboard to define 4 bit at 1 on the left part of
+     * board 4x4*/
+  } else if (size == 6) {
+    bitboard_bottom = 0x3F;
+    new_bitboard = (bitboard << 1) & ~0x41041041 & ~(bitboard_bottom << 36);
+    /* 0x41041041 is exa code of bitboard to define 6 bit at 1 on the left part
+     * of board 6x6*/
+  } else if (size == 8) {
+    bitboard_bottom = 0xFF;
+    new_bitboard =
+        (bitboard << 1) & ~(0x101010101010101) & ~(bitboard_bottom << 64);
+    /* 0x101010101010101 is exa code of bitboard to define 8 bit at 1 on the
+     * left part of board 8x8*/
+  } else if (size == 10) {
+    bitboard_left = 0x10040100401;
+    bitboard_bottom = 0x3FF;
+    new_bitboard = (bitboard << 1) & ~((bitboard_left << 50) | bitboard_left) &
+                   ~(bitboard_bottom << 100);
+    /* 0x10040100401 is exa code of bitboard to define 5 bit at 1 on the left
+     * part of board 10x10*/
+  }
+  return new_bitboard;
+}
+
+static bitboard_t shift_nw(const size_t size, const bitboard_t bitboard) {
+  return shift_west(size, shift_north(size, bitboard));
+}
+
+static bitboard_t shift_ne(const size_t size, const bitboard_t bitboard) {
+  return shift_est(size, shift_north(size, bitboard));
+}
+
+static bitboard_t shift_sw(const size_t size, const bitboard_t bitboard) {
+  return shift_west(size, shift_south(size, bitboard));
+}
+
+static bitboard_t shift_se(const size_t size, const bitboard_t bitboard) {
+  return shift_est(size, shift_south(size, bitboard));
+}
+
+static bitboard_t (*shift_func[8])(const size_t size,
+                                   const bitboard_t bitboard) = {
+    shift_north, shift_south, shift_west, shift_est,
+    shift_nw,    shift_ne,    shift_sw,   shift_se};
+
+/* compute all the possible moves */
+static bitboard_t compute_moves(const size_t size, const bitboard_t player,
+                                const bitboard_t opponent) {
+  bitboard_t moves = 0;
+  bitboard_t candidates;
+  for (size_t i = 0; i < 8; i++) { /* for each directions */
+    candidates = opponent & (shift_func[i](size, player));
+    while (candidates != 0) {
+      moves |= shift_func[i](size, candidates);
+      candidates = opponent & shift_func[i](size, candidates);
+    }
+  }
+  return moves & ~opponent & ~player;
+}
 
 /* allocate memory needed to creat a board of size 'size' */
 /* EXIT_FAILURE if something wrong happened */
 board_t *board_alloc(const size_t size, const disc_t player) {
   board_t *board = malloc(sizeof(board_t));
   if (board == NULL) {
-    fprintf(stderr, "board.c:board_alloc(): error: echec of malloc to "
-                    "allocate size of board_t\n");
-    exit(EXIT_FAILURE);
-  }
-  board->board = malloc(size * sizeof(disc_t *));
-  if (board->board == NULL) {
-    fprintf(stderr, "board.c:board_alloc(): error: echec of malloc to allocate "
-                    "size of disc_t*\n");
-    exit(EXIT_FAILURE);
-  }
-  for (size_t i = 0; i < size; i++) {
-    board->board[i] = malloc(size * sizeof(disc_t));
-    if (board->board[i] == NULL) {
-      fprintf(stderr, "board.c:board_alloc(): error: echec of malloc to "
-                      "allocate size of disc_t\n");
-      exit(EXIT_FAILURE);
-    }
-  }
-  /* init board to EMPTY_DISC */
-  for (size_t i = 0; i < size; i++) {
-    for (size_t j = 0; j < size; j++) {
-      board->board[i][j] = EMPTY_DISC;
-    }
+    fprintf(stderr, "board.c:board_alloc(): error: error of malloc board\n");
+    return NULL;
   }
   board->size = size;
   board->player = player;
+  board->black = 0;
+  board->white = 0;
+  board->moves = 0;
+  board->next_move = 0;
   return board;
 }
 
 /* free memory allocated to hold the board */
 void board_free(board_t *board) {
-  size_t size = board->size;
-  for (size_t i = 0; i < size; i++) {
-    free(board->board[i]);
+  if (board != NULL) {
+    free(board);
   }
-  free(board->board);
-  free(board);
 }
 
 /* init all the squares of the board as a starting game */
 board_t *board_init(const size_t size) {
+  /* verification of size */
   if (size % 2 != 0 || size / 2 < 1 || size / 2 > 5) {
     fprintf(stderr, "board.c:board_init(): error: error of size (%zu)\n", size);
-    exit(EXIT_FAILURE);
+    return NULL;
   }
   board_t *board = board_alloc(size, BLACK_DISC); /* creat a new void board */
-  for (size_t i = 0; i < size; i++) {
-    for (size_t j = 0; j < size; j++) {
-      if (i == (size / 2) - 1) /* if it's at the top of central square */
-      {
-        if (j == (size / 2) - 1) /* if it's at the left of central square */
-        {
-          board->board[i][j] = WHITE_DISC;
-        } else if (j == (size / 2)) /* if it's at the right of central square */
-        {
-          board->board[i][j] = BLACK_DISC;
-        }
-      } else if (i == (size / 2)) /* if it's at the bottom of central square */
-      {
-        if (j == (size / 2) - 1) /* if it's at the left of central square */
-        {
-          board->board[i][j] = BLACK_DISC;
-        } else if (j == (size / 2)) /* if it's at the right of central square */
-        {
-          board->board[i][j] = WHITE_DISC;
-        }
-      }
-    }
+  board->white = set_bitboard(size, (size / 2) - 1, (size / 2) - 1) |
+                 set_bitboard(size, size / 2, size / 2);
+  board->black = set_bitboard(size, (size / 2) - 1, size / 2) |
+                 set_bitboard(size, size / 2, (size / 2) - 1);
+  board->moves = compute_moves(size, board->black, board->white);
+  if (!board->moves) { /* if move is not possible */
+    board->player = EMPTY_DISC;
   }
   return board;
 }
 
 /* perform a deep copy of the board structure */
 board_t *board_copy(const board_t *board) {
+  if (board == NULL) {
+    return NULL;
+  }
   size_t size_copy = board->size;
   disc_t player_copy = board->player;
   board_t *board_copy = board_alloc(size_copy, player_copy);
-  board_copy->board = board->board;
+  board_copy->black = board->black;
+  board_copy->white = board->white;
+  board_copy->moves = board->moves;
+  board_copy->next_move = board->next_move;
   return board_copy;
 }
 
@@ -104,14 +224,27 @@ disc_t board_player(const board_t *board) { return board->player; }
 
 /* set the current player */
 void board_set_player(board_t *board, disc_t new_player) {
-  board->player = new_player;
+  if (new_player == BLACK_DISC || new_player == WHITE_DISC) {
+    board->player = new_player;
+  }
+  fprintf(stderr, "board.c:board_set_player(): error: you try to set player "
+                  "with something different to X and O on the board\n");
 }
 
 /* get the content of the square */
 disc_t board_get(const board_t *board, const size_t row, const size_t column) {
-  size_t size = board_size(board);
-  if (row <= size && column <= size) {
-    return board->board[row][column];
+  if (board != NULL) {
+    size_t size = board_size(board);
+    bitboard_t current_bitboard = set_bitboard(size, row, column);
+    if ((board->moves) & current_bitboard) {
+      return HINT_DISC;
+    }
+    if ((board->black) & current_bitboard) {
+      return BLACK_DISC;
+    }
+    if ((board->white) & current_bitboard) {
+      return WHITE_DISC;
+    }
   }
   return EMPTY_DISC;
 }
@@ -119,45 +252,183 @@ disc_t board_get(const board_t *board, const size_t row, const size_t column) {
 /* set the given disc at the given position */
 void board_set(board_t *board, const disc_t disc, const size_t row,
                const size_t column) {
-  size_t size = board_size(board);
-  if (row <= size && column <= size) {
-    board->board[row][column] = disc;
+  if (board != NULL) {
+    size_t size = board_size(board);
+    if (row < size && column < size) {
+      bitboard_t current_bitboard = set_bitboard(size, row, column);
+      switch (disc) {
+      case BLACK_DISC:
+        board->black = (board->black) | current_bitboard;
+        board->white = (board->white) & ~current_bitboard;
+        break;
+      case WHITE_DISC:
+        board->white = (board->white) | current_bitboard;
+        board->black = (board->black) & ~current_bitboard;
+        break;
+      case HINT_DISC:
+        board->moves = (board->moves) | current_bitboard;
+        break;
+      case EMPTY_DISC:
+        board->black = (board->black) & ~current_bitboard;
+        board->white = (board->white) & ~current_bitboard;
+        break;
+      }
+    }
+    if (board->player == BLACK_DISC) {
+      board->moves = compute_moves(size, board->black, board->white);
+    } else {
+      board->moves = compute_moves(size, board->white, board->black);
+    }
   }
+}
+
+bitboard_t _64_to_128(bitboard_t i) { return ((i << 64) | i); }
+
+/* count the number of bits set to 1 */
+static size_t bitboard_popcount(const bitboard_t bitboard) {
+  bitboard_t i = bitboard;
+  i = i - ((i >> 1) & _64_to_128(0x5555555555555555));
+  i = (i & _64_to_128(0x3333333333333333)) +
+      ((i >> 2) & _64_to_128(0x3333333333333333));
+  return (((i + (i >> 4)) & _64_to_128(0x0F0F0F0F0F0F0F0F)) *
+          _64_to_128(0x0101010101010101)) >>
+         120;
 }
 
 /* return score of the given board */
 score_t board_score(const board_t *board) {
   score_t score;
-  score.black = 0;
-  score.white = 0;
-  disc_t current_disc;
-  size_t size = board_size(board);
-  for (size_t i = 0; i < size; i++) {
-    for (size_t j = 0; j < size; j++) {
-      current_disc = board->board[i][j];
-      if (current_disc == BLACK_DISC) {
-        score.black++;
-      } else if (current_disc == WHITE_DISC) {
-        score.white++;
+  score.black = bitboard_popcount(board->black);
+  score.white = bitboard_popcount(board->white);
+  return score;
+}
+
+/* count the number of possible moves */
+size_t board_count_player_moves(board_t *board) {
+  return bitboard_popcount(board->moves);
+}
+
+size_t board_count_opponent_moves(board_t *board) {
+  if (board->player == BLACK_DISC) {
+    return bitboard_popcount(
+        compute_moves(board->size, board->white, board->black));
+  } else {
+    return bitboard_popcount(
+        compute_moves(board->size, board->black, board->white));
+  }
+}
+
+/* check if a move is valid */
+bool board_is_move_valid(const board_t *board, const move_t move) {
+  bitboard_t bitboard_move = set_bitboard(board->size, move.row, move.column);
+  return (board->moves) & bitboard_move;
+}
+
+/* find trace until the current player */
+bitboard_t trace_move(board_t *board, const move_t move) {
+  disc_t current_player = board_player(board);
+  size_t size = board->size;
+  /* init with BLACK_DISC player */
+  bitboard_t player = board->black;
+  bitboard_t opponent = board->white;
+  if (current_player == WHITE_DISC) {
+    player = board->white;
+    opponent = board->black;
+  }
+  bitboard_t start = set_bitboard(size, move.row, move.column);
+
+  bitboard_t trace;
+  bitboard_t final_trace = 0;
+  bitboard_t shift;
+
+  /* south trace */
+  for (size_t i = 0; i < 8; i++) {
+    trace = start;
+    shift = shift_func[i](size, start);
+    while ((shift & opponent) != 0) {
+      trace |= shift;
+      shift = shift_func[i](size, shift);
+      if (shift & player) {
+        final_trace |= trace;
       }
     }
   }
-  return score;
+  return final_trace;
+}
+
+/* apply a move according to rules and set the board for next move */
+bool board_play(board_t *board, const move_t move) {
+  if (!board_is_move_valid(board, move)) {
+    return 0;
+  }
+  /* get the trace of direction */
+  bitboard_t trace = trace_move(board, move);
+  disc_t current_player = board_player(board);
+  size_t size = board->size;
+  if (current_player == BLACK_DISC) {
+    board->white &= ~trace;
+    board->black |= trace;
+    board->player = WHITE_DISC;
+    board->moves = compute_moves(size, board->white, board->black);
+  } else {
+    board->black &= ~trace;
+    board->white |= trace;
+    board->player = BLACK_DISC;
+    board->moves = compute_moves(size, board->black, board->white);
+  }
+  board->next_move = board->moves;
+  if (!board->moves) {
+    board->player = EMPTY_DISC;
+  }
+  return 1;
+}
+
+/* store the next possible move */
+/* fail : return -1,-1 */
+move_t board_next_move(board_t *board) {
+  move_t move;
+  move.row = 0;
+  move.column = 0;
+  int nbr_tz = 0; /* no of zeros from last to first occurence of one */
+
+  if (board == NULL) {
+    move.row = -1;
+    move.column = -1;
+    return move;
+  }
+  if (board->next_move == 0) {
+    board->next_move = board->moves;
+  }
+  size_t size = board_size(board);               /* get the size of board */
+  bitboard_t possibles_moves = board->next_move; /* get possibles moves */
+  if (size < 10) {
+    /* if possible moves is a 64bit number */
+    nbr_tz = __builtin_ctzll(possibles_moves);
+  } else {
+    nbr_tz = bitboard_popcount((possibles_moves - 1) ^ possibles_moves) - 1;
+  }
+  printf("nr : %u\n", nbr_tz);
+  board->next_move &= possibles_moves - 1; /* remove the position */
+  move.row = nbr_tz / size;                /* compute row */
+  move.column = nbr_tz % size;             /* compute column */
+  return move;
 }
 
 /* write on the file 'fd' the content of the given board */
 int board_print(const board_t *board, FILE *fd) {
-  int nbr_char = 0; /* number of printed characters */
-  if (fd == NULL) {
+  if (fd == NULL || board == NULL) {
     return -1;
   }
-  size_t size = board_size(board);
-  disc_t current_player = board_player(board);
-  char *space_tampon = "  ";
-
+  int nbr_char = 0;                /* number of printed characters */
+  size_t size = board_size(board); /* get size */
+  disc_t current_player = board_player(board); /* get player */
+  score_t score = board_score(board);          /* set the score */
+  board_t *copy_board = board_copy(board);     /* do a copy of board */
+  char *space_tampon = "  ";                   /* set the initial space */
+  char current_char = 'A';                     /* set the initial character */
   nbr_char += fprintf(fd, "\n%c player's turn.\n", current_player);
   nbr_char += fprintf(fd, "\n    ");
-  char current_char = 'A';
+
   for (size_t i = 0; i < size; i++) {
     nbr_char += fprintf(fd, "%c ", (char)(current_char + i));
   }
@@ -170,13 +441,41 @@ int board_print(const board_t *board, FILE *fd) {
     }
     nbr_char += fprintf(fd, "%s%lu ", space_tampon, i + 1);
     for (size_t j = 0; j < size; j++) {
-      nbr_char += fprintf(fd, "%c ", board->board[i][j]);
+      nbr_char += fprintf(fd, "%c ", board_get(copy_board, i, j));
     }
     nbr_char += fprintf(fd, "\n");
   }
   nbr_char += fprintf(fd, "\n");
-  score_t score = board_score(board);
   nbr_char +=
       fprintf(fd, "Score: 'X' = %d, 'O' = %d\n\n", score.black, score.white);
   return nbr_char;
+}
+
+void test_board_c() {
+  // Calculate the time taken by fun()
+  board_t *board = board_init(10);
+  clock_t t;
+  double time_taken;
+
+  /* first test */
+  printf("%u\n", bitboard_popcount(board->black));
+  t = clock();
+  for (size_t i = 0; i < 10000000; i++) {
+    bitboard_popcount(board->black);
+  }
+
+  t = clock() - t;
+  time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
+  printf("fun() took %f seconds to execute \n", time_taken);
+
+  /* second test */
+  printf("%u\n", __builtin_popcount(board->black));
+  t = clock();
+  for (size_t i = 0; i < 10000000; i++) {
+    __builtin_popcount(board->black);
+  }
+
+  t = clock() - t;
+  time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
+  printf("fun() took %f seconds to execute \n", time_taken);
 }

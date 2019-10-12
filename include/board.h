@@ -1,6 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -30,6 +31,8 @@ typedef struct {
 
 /* Reversi board (forwards declaration to hide the implementation) */
 typedef struct board_t board_t;
+/* Base bitboard type */
+typedef unsigned __int128 bitboard_t;
 
 /* allocate memory needed to creat a board of size 'size' */
 board_t *board_alloc(const size_t size, const disc_t player);
@@ -49,6 +52,12 @@ size_t board_size(const board_t *board);
 /* get current player */
 disc_t board_player(const board_t *board);
 
+/* return score of the given board */
+score_t board_score(const board_t *board);
+
+/* check if a move is valid */
+bool board_is_move_valid(const board_t *board, const move_t move);
+
 /* set the current player */
 void board_set_player(board_t *board, disc_t new_player);
 
@@ -61,5 +70,28 @@ void board_set(board_t *board, const disc_t disc, const size_t row,
 
 /* write on the file 'fd' the content of the given board */
 int board_print(const board_t *board, FILE *fd);
+
+/* store the next possible move */
+move_t board_next_move(board_t *board);
+
+/* apply a move according to rules and set the board for next move */
+bool board_play(board_t *board, const move_t move);
+
+/* check if a move is valid */
+bool board_is_move_valid(const board_t *board, const move_t move);
+
+/* count the number of possible moves */
+size_t board_count_player_moves(board_t *board);
+
+/* count the number of bits set to 1 */
+static size_t bitboard_popcount(const bitboard_t bitboard);
+
+/* set the given disc at the given position */
+void board_set(board_t *board, const disc_t disc, const size_t row,
+               const size_t column);
+
+/* compute all the possible moves */
+static bitboard_t compute_moves(const size_t size, const bitboard_t player,
+                                const bitboard_t opponent);
 
 #endif /* BOARD_H */
