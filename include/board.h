@@ -83,9 +83,6 @@ bool board_is_move_valid(const board_t *board, const move_t move);
 /* count the number of possible moves */
 size_t board_count_player_moves(board_t *board);
 
-/* count the number of bits set to 1 */
-static size_t bitboard_popcount(const bitboard_t bitboard);
-
 /* set the given disc at the given position */
 void board_set(board_t *board, const disc_t disc, const size_t row,
                const size_t column);

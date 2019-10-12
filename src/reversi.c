@@ -184,10 +184,6 @@ static void print_usage() {
 }
 
 int main(int argc, char *argv[]) {
-  /* test */
-  test_board_c();
-  /***/
-
   const struct option longopts[] = {{"size", required_argument, NULL, 's'},
                                     {"black-ai", optional_argument, NULL, 'b'},
                                     {"white-ai", optional_argument, NULL, 'w'},
