@@ -83,12 +83,4 @@ bool board_is_move_valid(const board_t *board, const move_t move);
 /* count the number of possible moves */
 size_t board_count_player_moves(board_t *board);
 
-/* set the given disc at the given position */
-void board_set(board_t *board, const disc_t disc, const size_t row,
-               const size_t column);
-
-/* compute all the possible moves */
-static bitboard_t compute_moves(const size_t size, const bitboard_t player,
-                                const bitboard_t opponent);
-
 #endif /* BOARD_H */

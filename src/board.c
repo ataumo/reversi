@@ -300,7 +300,7 @@ bool board_is_move_valid(const board_t *board, const move_t move) {
 }
 
 /* find trace until the current player */
-bitboard_t trace_move(board_t *board, const move_t move) {
+static bitboard_t trace_move(board_t *board, const move_t move) {
   disc_t current_player = board_player(board);
   size_t size = board->size;
   /* init with BLACK_DISC player */

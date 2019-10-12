@@ -9,6 +9,7 @@ all: build
 
 build:
 	@cd src && $(MAKE)
+	@cd test && $(MAKE)
 	@cp -f src/$(EXE) ./
 
 clean:
