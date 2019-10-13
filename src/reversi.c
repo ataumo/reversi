@@ -149,7 +149,7 @@ static board_t *file_parser(const char *filename) {
             "reversi.c:file_parser(): error: size of board need to be pair\n");
     exit(EXIT_FAILURE);
   }
-  if (size_raw / 2 < 1 || size_raw / 2 > 5) {
+  if (size_raw < MIN_BOARD_SIZE || size_raw > MAX_BOARD_SIZE) {
     if (size_raw == 0) {
       fprintf(stderr, "reversi.c:file_parser(): error: missing board\n");
     } else {
