@@ -305,10 +305,6 @@ int main(int argc, char *argv[]) {
         fclose(file);
       } else { /* normal mode */
         board_t *newboard = file_parser(file_name);
-        board_print(newboard, stdout);
-        score_t score;
-        score = board_score(newboard);
-        printf("black = %d, white = %d\n", score.black, score.white);
       }
     } else {
       if (contest_mode) { /* constes mode is enable */
