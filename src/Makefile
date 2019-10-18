@@ -12,13 +12,16 @@ LDFLAGS =
 # Rules and targets
 all: reversi
 
-reversi: reversi.o board.o
+reversi: reversi.o board.o player.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-reversi.o: reversi.c reversi.h ../include/board.h
+reversi.o: reversi.c reversi.h ../include/board.h ../include/player.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
 
 board.o: board.c ../include/board.h
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
+
+player.o: player.c ../include/player.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
 
 clean:
