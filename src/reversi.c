@@ -77,7 +77,7 @@ static board_t *file_parser(const char *filename) {
       if (!comment_status) {
         begin_board = true;
         if (!player_is_saved) {
-          errx(1, "reversi.c:file_parser(): error: player is missing");
+          errx(1, "player is missing");
         }
         content = true;
         current_column_count++;
@@ -97,14 +97,10 @@ static board_t *file_parser(const char *filename) {
       if (content) {
         if (current_column_count != size_column) {
           if (size_column > current_column_count) {
-            fprintf(stderr,
-                    "reversi.c:file_parser(): error: character is missed in "
-                    "line %d\n",
+            fprintf(stderr, "reversi: character is missed in line %d\n",
                     line_count);
           } else {
-            fprintf(stderr,
-                    "reversi.c:file_parser(): error: too much character in "
-                    "line %d\n",
+            fprintf(stderr, "reversi: too much character in line %d\n",
                     line_count);
           }
           exit(EXIT_FAILURE);
@@ -117,13 +113,10 @@ static board_t *file_parser(const char *filename) {
     default:
       if (current_char != ' ' && current_char != '\t' && !comment_status) {
         if (!player_is_saved) {
-          fprintf(stderr,
-                  "reversi.c:file_parser(): error: player is incorrect\n");
+          fprintf(stderr, "reversi: player is incorrect\n");
         } else {
-          fprintf(
-              stderr,
-              "reversi.c:file_parser(): error: wrong character %c at line %d\n",
-              current_char, line_count + 1);
+          fprintf(stderr, "reversi: wrong character %c at line %d\n",
+                  current_char, line_count + 1);
         }
         exit(EXIT_FAILURE);
       }
@@ -132,26 +125,23 @@ static board_t *file_parser(const char *filename) {
   } /* end of while */
   if (size_raw != size_column) {
     if (size_raw > size_column) {
-      fprintf(stderr,
-              "reversi.c:file_parser(): error: board has %d extra raw\n",
+      fprintf(stderr, "reversi: board has %d extra raw\n",
               size_raw - size_column);
     } else {
-      fprintf(stderr,
-              "reversi.c:file_parser(): error: board has %d missing raw\n",
+      fprintf(stderr, "reversi: board has %d missing raw\n",
               size_column - size_raw);
     }
     exit(EXIT_FAILURE);
   }
   if (size_raw % 2 != 0) {
-    errx(1, "reversi.c:file_parser(): error: size of board need to be pair");
+    errx(1, "reversi: size of board need to be pair");
   }
   if (size_raw < MIN_BOARD_SIZE || size_raw > MAX_BOARD_SIZE) {
     if (size_raw == 0) {
-      fprintf(stderr, "reversi.c:file_parser(): error: missing board\n");
+      fprintf(stderr, "reversi: error: missing board\n");
     } else {
       fprintf(stderr,
-              "reversi.c:file_parser(): error: size of square need to be 2, 4, "
-              "6, 8 or 10, not %d\n",
+              "reversi: size of square need to be 2, 4, 6, 8 or 10, not %d\n",
               size_raw);
     }
     exit(EXIT_FAILURE);
@@ -215,8 +205,7 @@ int main(int argc, char *argv[]) {
         errx(1, "the argument of -s option is too long");
       }
       if ((int_optarg < 1 || int_optarg > 5)) {
-        errx(1, "reversi.c:main(): error: the argument of -s option should be "
-                "between 1 and 5");
+        errx(1, "the argument of -s option should be between 1 and 5");
       }
       board_size_num = int_optarg;
       break;
@@ -243,9 +232,7 @@ int main(int argc, char *argv[]) {
       if (optarg != NULL) { /* if argument is given */
         int_optarg = atoi(optarg);
         if (strlen(optarg) != 1) {
-          errx(
-              1,
-              "reversi.c:main(): error: the argument of -w option is too long");
+          errx(1, "the argument of -w option is too long");
         }
         switch (int_optarg) {
         case 0: /* human tactic */
@@ -281,8 +268,7 @@ int main(int argc, char *argv[]) {
       break;
 
     case ':': /* if argument is not given */
-      errx(1, "reversi.c:main(): error: -%c commande must have an argument",
-           optopt);
+      errx(1, "-%c commande must have an argument", optopt);
       break;
 
     default: /* if an unknown option is given */
@@ -313,7 +299,7 @@ int main(int argc, char *argv[]) {
       }
       fclose(file);
     } else {              /* no file is given */
-      if (contest_mode) { /* constes mode is enable */
+      if (contest_mode) { /* contest mode is enable */
         errx(1, "Contest mode is activated but no file is given");
       }
       board_t *newboard = board_init(board_size_num * 2);
