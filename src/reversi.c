@@ -42,7 +42,7 @@ static board_t *file_parser(const char *filename) {
   int size_raw = 0;
 
   /* other type */
-  char current_char = '\0';
+  int current_char = '\0';
   size_t nbr_of_disc = 0;
   disc_t player;
   coor_disc tab_disc[100];
@@ -77,9 +77,7 @@ static board_t *file_parser(const char *filename) {
       if (!comment_status) {
         begin_board = true;
         if (!player_is_saved) {
-          fprintf(stderr,
-                  "reversi.c:file_parser(): error: player is missing\n");
-          exit(EXIT_FAILURE);
+          errx(1, "reversi.c:file_parser(): error: player is missing");
         }
         content = true;
         current_column_count++;
@@ -145,9 +143,7 @@ static board_t *file_parser(const char *filename) {
     exit(EXIT_FAILURE);
   }
   if (size_raw % 2 != 0) {
-    fprintf(stderr,
-            "reversi.c:file_parser(): error: size of board need to be pair\n");
-    exit(EXIT_FAILURE);
+    errx(1, "reversi.c:file_parser(): error: size of board need to be pair");
   }
   if (size_raw < MIN_BOARD_SIZE || size_raw > MAX_BOARD_SIZE) {
     if (size_raw == 0) {
@@ -215,21 +211,29 @@ int main(int argc, char *argv[]) {
     switch (optc) {
 
     case 's': /* 'size' option */
-      if ((int_optarg < 1 || int_optarg > 5) && strlen(optarg) != 1) {
-        printf("reversi.c:main(): error: the argument of -s option should be "
-               "between 1 and 5\n");
-        exit(EXIT_FAILURE);
+      if (strlen(optarg) != 1) {
+        errx(1, "the argument of -s option is too long");
       }
-      board_size_num = int_optarg * 2;
+      if ((int_optarg < 1 || int_optarg > 5)) {
+        errx(1, "reversi.c:main(): error: the argument of -s option should be "
+                "between 1 and 5");
+      }
+      board_size_num = int_optarg;
       break;
 
     case 'b':               /* 'black-ai' option */
       if (optarg != NULL) { /* if argument is given */
         int_optarg = atoi(optarg);
-        if ((int_optarg != 1 && int_optarg != 0) && strlen(optarg) != 1) {
-          printf("reversi.c:main(): error: the argument of -b option should be "
-                 "0 or 1\n");
-          exit(EXIT_FAILURE);
+        if (strlen(optarg) != 1) {
+          errx(1, "the argument of -b option is too long");
+        }
+        switch (int_optarg) {
+        case 0: /* human tactic */
+          break;
+        case 1: /* random tactic */
+          break;
+        default:
+          errx(1, "the argument of -b option should be 0 or 1");
         }
         tactic_b_player = int_optarg;
       }
@@ -238,10 +242,18 @@ int main(int argc, char *argv[]) {
     case 'w':               /* 'white-ai' option */
       if (optarg != NULL) { /* if argument is given */
         int_optarg = atoi(optarg);
-        if ((int_optarg != 1 && int_optarg != 0) && strlen(optarg) != 1) {
-          printf("reversi.c:main(): error: the argument of -w option should be "
-                 "0 or 1\n");
-          exit(EXIT_FAILURE);
+        if (strlen(optarg) != 1) {
+          errx(
+              1,
+              "reversi.c:main(): error: the argument of -w option is too long");
+        }
+        switch (int_optarg) {
+        case 0: /* human tactic */
+          break;
+        case 1: /* random tactic */
+          break;
+        default:
+          errx(1, "the argument of -w option should be 0 or 1");
         }
         tactic_w_player = int_optarg;
       }
@@ -269,16 +281,12 @@ int main(int argc, char *argv[]) {
       break;
 
     case ':': /* if argument is not given */
-      fprintf(stderr,
-              "reversi.c:main(): error: -%c commande must have an argument\n",
-              optopt);
-      exit(EXIT_FAILURE);
+      errx(1, "reversi.c:main(): error: -%c commande must have an argument",
+           optopt);
       break;
 
     default: /* if an unknown option is given */
-      fprintf(stderr,
-              "Illegal option: Try 'reversi --help' for more information\n");
-      exit(EXIT_FAILURE);
+      errx(1, "Illegal option: Try 'reversi --help' for more information");
       break;
     }
   }
@@ -290,28 +298,27 @@ int main(int argc, char *argv[]) {
     cpt_of_file++;
   }
   if (cpt_of_file > 1) { /* more than 1 file is given */
-    fprintf(stderr, "reversi.c:main(): error: You must to give 1 file for the "
-                    "contest mode\n");
+    errx(1, "You must to give 1 file for the contest mode");
   } else {
     if (file_argument) { /* file argument is given */
       file = fopen(file_name, "r+");
       if (file == NULL) { /* The given argument is not a readable file */
-        fprintf(stderr, "reversi.c:main(): error: opening the file: %s\n",
-                strerror(errno));
-        exit(EXIT_FAILURE);
+        err(errno, "%s", file_name);
       }
       if (contest_mode) { /* contest mode is enable */
         /* read in contest file */
-        fclose(file);
       } else { /* normal mode */
         board_t *newboard = file_parser(file_name);
+        board_free(newboard);
       }
-    } else {
+      fclose(file);
+    } else {              /* no file is given */
       if (contest_mode) { /* constes mode is enable */
-        fprintf(stderr, "reversi.c:main(): error: contest mode is activated "
-                        "but no file is given\n");
-        exit(EXIT_FAILURE);
+        errx(1, "Contest mode is activated but no file is given");
       }
+      board_t *newboard = board_init(board_size_num * 2);
+      board_print(newboard, stdout);
+      board_free(newboard);
     }
   }
 

@@ -9,6 +9,9 @@
 #define MIN_BOARD_SIZE 2
 #define MAX_BOARD_SIZE 10
 
+/* Size of shift array */
+#define SIZE_SHIFT_ARRAY 8
+
 /* Board discs */
 typedef enum {
   BLACK_DISC = 'X',

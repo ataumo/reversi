@@ -106,8 +106,8 @@ static bitboard_t shift_se(const size_t size, const bitboard_t bitboard) {
 }
 
 /* array of shift functions */
-static bitboard_t (*shift_func[8])(const size_t size,
-                                   const bitboard_t bitboard) = {
+static bitboard_t (*shift_func[SIZE_SHIFT_ARRAY])(const size_t size,
+                                                  const bitboard_t bitboard) = {
     shift_north, shift_south, shift_west, shift_est,
     shift_nw,    shift_ne,    shift_sw,   shift_se};
 
@@ -116,7 +116,7 @@ static bitboard_t compute_moves(const size_t size, const bitboard_t player,
                                 const bitboard_t opponent) {
   bitboard_t moves = 0;
   bitboard_t candidates;
-  for (size_t i = 0; i < 8; i++) { /* for each directions */
+  for (size_t i = 0; i < SIZE_SHIFT_ARRAY; i++) { /* for each directions */
     candidates = opponent & (shift_func[i](size, player));
     while (candidates != 0) {
       moves |= shift_func[i](size, candidates);
