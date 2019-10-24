@@ -1,5 +1,6 @@
 #include "reversi.h"
 #include "board.h"
+#include "player.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -18,6 +19,57 @@ typedef struct {
   int x;
   int y;
 } coor_disc;
+
+static int game(move_t (*black)(board_t), move_t (*white)(board_t),
+                board_t *board) {
+  disc_t current_player = board_player(board);
+  size_t size = board_size(board);
+  score_t score;
+  size_t black_score;
+  size_t white_score;
+  bool cant_play = false;
+  while (current_player != EMPTY_DISC) {
+    if (current_player == BLACK_DISC) {
+      if (board_count_player_moves(board) != 0) { /* can play */
+        board_play(board, random_player(board));
+      } else {
+        if (cant_play) {
+          break;
+        }
+        cant_play = true;
+        board_set_player(board, WHITE_DISC);
+      }
+    }
+    if (current_player == WHITE_DISC) {
+      if (board_count_player_moves(board) != 0) {
+        board_play(board, random_player(board));
+      } else {
+        if (cant_play) {
+          break;
+        }
+        cant_play = true;
+        board_set_player(board, BLACK_DISC);
+      }
+    }
+    board_print(board, stdout);
+    current_player = board_player(board);
+  }
+  printf("%c\n", current_player);
+  score = board_score(board);
+  black_score = score.black;
+  white_score = score.white;
+  if (black_score > white_score) {
+    printf("black win\n");
+  }
+  if (black_score < white_score) {
+    printf("white win\n");
+  }
+  if (black_score == white_score) {
+    printf("nobody win\n");
+    return 0;
+  }
+  return 1;
+}
 
 static board_t *file_parser(const char *filename) {
   FILE *file;
@@ -201,9 +253,11 @@ int main(int argc, char *argv[]) {
     switch (optc) {
 
     case 's': /* 'size' option */
+      int_optarg = atoi(optarg);
       if (strlen(optarg) != 1) {
         errx(1, "the argument of -s option is too long");
       }
+      printf("%d\n", int_optarg);
       if ((int_optarg < 1 || int_optarg > 5)) {
         errx(1, "the argument of -s option should be between 1 and 5");
       }
@@ -302,9 +356,11 @@ int main(int argc, char *argv[]) {
       if (contest_mode) { /* contest mode is enable */
         errx(1, "Contest mode is activated but no file is given");
       }
-      board_t *newboard = board_init(board_size_num * 2);
-      board_print(newboard, stdout);
-      board_free(newboard);
+      board_t *board = board_init(board_size_num * 2);
+      /* TEST */
+      game(&random_player, &random_player, board);
+      /* TEST */
+      board_free(board);
     }
   }
 

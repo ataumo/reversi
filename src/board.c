@@ -126,8 +126,6 @@ static bitboard_t compute_moves(const size_t size, const bitboard_t player,
   return moves & ~opponent & ~player;
 }
 
-/* allocate memory needed to creat a board of size 'size' */
-/* EXIT_FAILURE if something wrong happened */
 board_t *board_alloc(const size_t size, const disc_t player) {
   board_t *board = malloc(sizeof(board_t));
   if (board == NULL) {
@@ -143,14 +141,12 @@ board_t *board_alloc(const size_t size, const disc_t player) {
   return board;
 }
 
-/* free memory allocated to hold the board */
 void board_free(board_t *board) {
   if (board != NULL) {
     free(board);
   }
 }
 
-/* init all the squares of the board as a starting game */
 board_t *board_init(const size_t size) {
   /* verification of size */
   if (size % 2 != 0 || size < MIN_BOARD_SIZE || size > MAX_BOARD_SIZE) {
@@ -172,7 +168,6 @@ board_t *board_init(const size_t size) {
   return board;
 }
 
-/* perform a deep copy of the board structure */
 board_t *board_copy(const board_t *board) {
   if (board == NULL) {
     return NULL;
@@ -187,13 +182,10 @@ board_t *board_copy(const board_t *board) {
   return board_copy;
 }
 
-/* return size of the board */
 size_t board_size(const board_t *board) { return board->size; }
 
-/* get current player */
 disc_t board_player(const board_t *board) { return board->player; }
 
-/* set the current player */
 void board_set_player(board_t *board, disc_t new_player) {
   if (new_player != HINT_DISC) {
     board->player = new_player;
@@ -203,7 +195,6 @@ void board_set_player(board_t *board, disc_t new_player) {
   }
 }
 
-/* get the content of the square */
 disc_t board_get(const board_t *board, const size_t row, const size_t column) {
   if (board != NULL) {
     size_t size = board->size;
@@ -268,7 +259,6 @@ static size_t bitboard_popcount(const bitboard_t bitboard) {
          120;
 }
 
-/* return score of the given board */
 score_t board_score(const board_t *board) {
   score_t score;
   score.black = bitboard_popcount(board->black);
@@ -276,12 +266,10 @@ score_t board_score(const board_t *board) {
   return score;
 }
 
-/* count the number of player's possible moves */
 size_t board_count_player_moves(board_t *board) {
   return bitboard_popcount(board->moves);
 }
 
-/* count the number of opponent's possible moves */
 size_t board_count_opponent_moves(board_t *board) {
   if (board->player == BLACK_DISC) {
     return bitboard_popcount(
@@ -292,7 +280,6 @@ size_t board_count_opponent_moves(board_t *board) {
   }
 }
 
-/* check if a move is valid */
 bool board_is_move_valid(const board_t *board, const move_t move) {
   bitboard_t bitboard_move = set_bitboard(board->size, move.row, move.column);
   return (board->moves) & bitboard_move;
@@ -328,7 +315,6 @@ static bitboard_t trace_move(board_t *board, const move_t move) {
   return final_trace;
 }
 
-/* apply a move according to rules and set the board for next move */
 bool board_play(board_t *board, const move_t move) {
   if (!board_is_move_valid(board, move)) {
     return 0;
@@ -350,14 +336,14 @@ bool board_play(board_t *board, const move_t move) {
     board->moves = compute_moves(size, board->black, board->white);
   }
   board->next_move = board->moves;
-  if (!board->moves) {
+
+  score_t score = board_score(board);
+  if (score.black + score.white == size * size) {
     board->player = EMPTY_DISC;
   }
   return 1;
 }
 
-/* store the next possible move */
-/* fail : return -1,-1 */
 move_t board_next_move(board_t *board) {
   move_t move;
   move.row = 0;
@@ -386,7 +372,6 @@ move_t board_next_move(board_t *board) {
   return move;
 }
 
-/* write on the file 'fd' the content of the given board */
 int board_print(const board_t *board, FILE *fd) {
   if (fd == NULL || board == NULL) {
     return -1;

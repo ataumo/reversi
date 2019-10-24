@@ -38,7 +38,8 @@ typedef struct board_t board_t;
 typedef unsigned __int128 bitboard_t;
 
 /** board_t type **/
-/* allocate memory needed to creat a board of size 'size' */
+/* allocate memory needed to creat a board of size 'size'
+ * EXIT_FAILURE if something wrong happened */
 board_t *board_alloc(const size_t size, const disc_t player);
 /* init all the squares of the board as a starting game */
 board_t *board_init(const size_t size);
@@ -50,8 +51,6 @@ board_t *board_copy(const board_t *board);
 bool board_is_move_valid(const board_t *board, const move_t move);
 /* apply a move according to rules and set the board for next move */
 bool board_play(board_t *board, const move_t move);
-/* check if a move is valid */
-bool board_is_move_valid(const board_t *board, const move_t move);
 
 /** disc_t type **/
 /* get current player */
@@ -64,7 +63,8 @@ disc_t board_get(const board_t *board, const size_t row, const size_t column);
 int board_print(const board_t *board, FILE *fd);
 
 /** move_t type **/
-/* store the next possible move */
+/* store the next possible move
+ * fail : return -1,-1 */
 move_t board_next_move(board_t *board);
 
 /** score_t type **/
