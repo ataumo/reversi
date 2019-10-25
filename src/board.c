@@ -316,33 +316,35 @@ static bitboard_t trace_move(board_t *board, const move_t move) {
 }
 
 bool board_play(board_t *board, const move_t move) {
+  size_t size = board->size; /* get size */
   /* if move is not valid */
   if (!board_is_move_valid(board, move)) {
-    return 0;
+    return false;
   }
+  bitboard_t opponent_moves;
   bitboard_t trace = trace_move(board, move); /* get the trace of direction */
   disc_t current_player = board->player;
-  size_t size = board->size;
   if (current_player == BLACK_DISC) {
     /* BLACK_DISC player plays */
     board->white &= ~trace;
     board->black |= trace;
     board->player = WHITE_DISC;
     board->moves = compute_moves(size, board->white, board->black);
-  } else {
+    opponent_moves = compute_moves(size, board->black, board->white);
+  } else if (current_player == WHITE_DISC) {
     /* WHITE_DISC player plays */
     board->black &= ~trace;
     board->white |= trace;
     board->player = BLACK_DISC;
     board->moves = compute_moves(size, board->black, board->white);
+    opponent_moves = compute_moves(size, board->white, board->black);
   }
   board->next_move = board->moves;
-
-  score_t score = board_score(board);
-  if (score.black + score.white == size * size) {
+  if (board->moves == 0 && opponent_moves == 0) {
+    printf("ok------\n");
     board->player = EMPTY_DISC;
   }
-  return 1;
+  return true;
 }
 
 move_t board_next_move(board_t *board) {
