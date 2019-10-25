@@ -30,30 +30,20 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   bool cant_play = false;
   while (current_player != EMPTY_DISC) {
     if (current_player == BLACK_DISC) {
-      if (board_count_player_moves(board) != 0) { /* can play */
-        board_play(board, black(board));
-      } else {
-        if (cant_play) {
-          break;
-        }
-        cant_play = true;
-        board_set_player(board, WHITE_DISC);
-      }
+      printf("okb\n");
+      board_play(board, black(board));
     }
     if (current_player == WHITE_DISC) {
-      if (board_count_player_moves(board) != 0) {
-        board_play(board, white(board));
-      } else {
-        if (cant_play) {
-          break;
-        }
-        cant_play = true;
-        board_set_player(board, BLACK_DISC);
-      }
+      printf("okw\n");
+      board_play(board, white(board));
     }
     board_print(board, stdout);
+    printf("%d\n", board_count_player_moves(board));
+    printf("%d\n", board_count_opponent_moves(board));
     current_player = board_player(board);
+    printf("==========================================\n");
   }
+  printf("ok\n");
   printf("%c\n", current_player);
   score = board_score(board);
   black_score = score.black;

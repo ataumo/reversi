@@ -10,8 +10,15 @@ static void rand_init(void) {
   }
 }
 
+/* return -1,-1 if no possibles moves */
 move_t random_player(board_t *board) {
   size_t nbr_poss_moves = board_count_player_moves(board);
+  if (nbr_poss_moves == 0) {
+    move_t move;
+    move.row = -1;
+    move.column = -1;
+    return move;
+  }
   rand_init();
   size_t r = (size_t)(random() % nbr_poss_moves);
   for (size_t i = 0; i < r; i++) {

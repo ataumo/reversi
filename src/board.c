@@ -318,30 +318,35 @@ static bitboard_t trace_move(board_t *board, const move_t move) {
 bool board_play(board_t *board, const move_t move) {
   size_t size = board->size; /* get size */
   /* if move is not valid */
-  if (!board_is_move_valid(board, move)) {
-    return false;
-  }
-  bitboard_t opponent_moves;
-  bitboard_t trace = trace_move(board, move); /* get the trace of direction */
+  bitboard_t trace;
   disc_t current_player = board->player;
   if (current_player == BLACK_DISC) {
+
     /* BLACK_DISC player plays */
-    board->white &= ~trace;
-    board->black |= trace;
+    if (board_is_move_valid(board, move)) {
+      trace = trace_move(board, move); /* get the trace of direction */
+      if (board_count_player_moves(board) != 0) { /* player can't plays */
+        board->white &= ~trace;
+        board->black |= trace;
+        board->moves = compute_moves(size, board->white, board->black);
+      }
+    }
     board->player = WHITE_DISC;
-    board->moves = compute_moves(size, board->white, board->black);
-    opponent_moves = compute_moves(size, board->black, board->white);
   } else if (current_player == WHITE_DISC) {
     /* WHITE_DISC player plays */
-    board->black &= ~trace;
-    board->white |= trace;
+    if (board_is_move_valid(board, move)) {
+      trace = trace_move(board, move); /* get the trace of direction */
+      if (board_count_player_moves(board) != 0) { /* player can't plays */
+        board->black &= ~trace;
+        board->white |= trace;
+        board->moves = compute_moves(size, board->black, board->white);
+      }
+    }
     board->player = BLACK_DISC;
-    board->moves = compute_moves(size, board->black, board->white);
-    opponent_moves = compute_moves(size, board->white, board->black);
   }
   board->next_move = board->moves;
-  if (board->moves == 0 && opponent_moves == 0) {
-    printf("ok------\n");
+  if (board_count_player_moves(board) == 0 &&
+      board_count_opponent_moves(board) == 0) {
     board->player = EMPTY_DISC;
   }
   return true;
