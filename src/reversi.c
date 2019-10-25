@@ -20,7 +20,7 @@ typedef struct {
   int y;
 } coor_disc;
 
-static int game(move_t (*black)(board_t), move_t (*white)(board_t),
+static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
                 board_t *board) {
   disc_t current_player = board_player(board);
   size_t size = board_size(board);
@@ -31,7 +31,7 @@ static int game(move_t (*black)(board_t), move_t (*white)(board_t),
   while (current_player != EMPTY_DISC) {
     if (current_player == BLACK_DISC) {
       if (board_count_player_moves(board) != 0) { /* can play */
-        board_play(board, random_player(board));
+        board_play(board, black(board));
       } else {
         if (cant_play) {
           break;
@@ -42,7 +42,7 @@ static int game(move_t (*black)(board_t), move_t (*white)(board_t),
     }
     if (current_player == WHITE_DISC) {
       if (board_count_player_moves(board) != 0) {
-        board_play(board, random_player(board));
+        board_play(board, white(board));
       } else {
         if (cant_play) {
           break;
@@ -358,7 +358,7 @@ int main(int argc, char *argv[]) {
       }
       board_t *board = board_init(board_size_num * 2);
       /* TEST */
-      game(&random_player, &random_player, board);
+      game(random_player, random_player, board);
       /* TEST */
       board_free(board);
     }

@@ -316,6 +316,7 @@ static bitboard_t trace_move(board_t *board, const move_t move) {
 }
 
 bool board_play(board_t *board, const move_t move) {
+  /* if move is not valid */
   if (!board_is_move_valid(board, move)) {
     return 0;
   }

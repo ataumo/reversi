@@ -42,6 +42,7 @@ void ASSERT(bool test, char *fmt, ...) {
 }
 
 int main(void) {
+  printf("ok\n");
   clock_t t;
   double time_taken;
   t = clock();
