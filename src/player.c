@@ -64,7 +64,7 @@ static void game_save(board_t *board) {
     }
   }
   /** write section **/
-  printf("creating file with name %s\n", file_name);
+  fprintf(stdout, "creating file with name %s\n", file_name);
   FILE *file =
       fopen(file_name, "w+"); /* create this file if no already exist */
   fprintf(file, "%c\n", board_player(board));

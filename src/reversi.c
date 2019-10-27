@@ -12,6 +12,7 @@
 #include <string.h>
 
 #define MAX_LENGTH 512
+bool VERBOSE = false;
 
 /* use for keep disc player in file parser */
 typedef struct {
@@ -20,31 +21,44 @@ typedef struct {
   int y;
 } coor_disc;
 
+static char get_alpha_column(size_t row) {
+  int alpha_maj[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+  return alpha_maj[row];
+}
+
 static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
                 board_t *board) {
   disc_t current_player = board_player(board);
-  size_t size = board_size(board);
   score_t score;
   size_t black_score;
   size_t white_score;
-  bool cant_play = false;
   while (current_player != EMPTY_DISC) {
+    if (VERBOSE) {
+      board_print(board, stdout);
+    }
     if (current_player == BLACK_DISC) {
-      printf("okb\n");
-      board_play(board, black(board));
+      move_t move = black(board);
+      if (black == random_player) {
+        printf("row=%d, column=%d\n", move.row, move.column);
+        printf("%c plays %c%d\n", current_player, get_alpha_column(move.column),
+               move.row + 1);
+      }
+      board_play(board, move);
     }
     if (current_player == WHITE_DISC) {
-      printf("okw\n");
-      board_play(board, white(board));
+      move_t move = white(board);
+      if (white == random_player) {
+        printf("row=%d, column=%d\n", move.row, move.column);
+        printf("%c plays %c%d\n", current_player, get_alpha_column(move.column),
+               move.row + 1);
+      }
+      board_play(board, move);
     }
-    board_print(board, stdout);
-    printf("%d\n", board_count_player_moves(board));
-    printf("%d\n", board_count_opponent_moves(board));
+    if (VERBOSE) {
+      printf("==========================================\n");
+    }
     current_player = board_player(board);
-    printf("==========================================\n");
   }
-  printf("ok\n");
-  printf("%c\n", current_player);
   score = board_score(board);
   black_score = score.black;
   white_score = score.white;
@@ -247,7 +261,6 @@ int main(int argc, char *argv[]) {
       if (strlen(optarg) != 1) {
         errx(1, "the argument of -s option is too long");
       }
-      printf("%d\n", int_optarg);
       if ((int_optarg < 1 || int_optarg > 5)) {
         errx(1, "the argument of -s option should be between 1 and 5");
       }
@@ -348,7 +361,16 @@ int main(int argc, char *argv[]) {
       }
       board_t *board = board_init(board_size_num * 2);
       /* TEST */
-      game(random_player, random_player, board);
+      VERBOSE = verbose;
+      move_t (*blackfunc)(board_t *) = human_player;
+      move_t (*whitefunc)(board_t *) = human_player;
+      if (tactic_b_player == 1) {
+        blackfunc = random_player;
+      }
+      if (tactic_w_player == 1) {
+        whitefunc = random_player;
+      }
+      game(blackfunc, whitefunc, board);
       /* TEST */
       board_free(board);
     }

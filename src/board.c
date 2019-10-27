@@ -316,40 +316,43 @@ static bitboard_t trace_move(board_t *board, const move_t move) {
 }
 
 bool board_play(board_t *board, const move_t move) {
-  size_t size = board->size; /* get size */
-  /* if move is not valid */
+  size_t size = board->size;  /* get size */
+  bool returned_value = true; /* false if invalid move is given */
   bitboard_t trace;
   disc_t current_player = board->player;
-  if (current_player == BLACK_DISC) {
 
-    /* BLACK_DISC player plays */
-    if (board_is_move_valid(board, move)) {
-      trace = trace_move(board, move); /* get the trace of direction */
+  if (current_player == BLACK_DISC) {       /* BLACK_DISC player plays */
+    if (board_is_move_valid(board, move)) { /* if move is valid */
+      trace = trace_move(board, move);      /* get the trace of direction */
       if (board_count_player_moves(board) != 0) { /* player can't plays */
         board->white &= ~trace;
         board->black |= trace;
         board->moves = compute_moves(size, board->white, board->black);
       }
+    } else {
+      returned_value = false;
     }
     board->player = WHITE_DISC;
-  } else if (current_player == WHITE_DISC) {
-    /* WHITE_DISC player plays */
-    if (board_is_move_valid(board, move)) {
-      trace = trace_move(board, move); /* get the trace of direction */
+  } else if (current_player == WHITE_DISC) { /* WHITE_DISC player plays */
+    if (board_is_move_valid(board, move)) {  /* if move is valid */
+      trace = trace_move(board, move);       /* get the trace of direction */
       if (board_count_player_moves(board) != 0) { /* player can't plays */
         board->black &= ~trace;
         board->white |= trace;
         board->moves = compute_moves(size, board->black, board->white);
       }
+    } else {
+      returned_value = false;
     }
     board->player = BLACK_DISC;
   }
   board->next_move = board->moves;
+  /* if black and white players can't play */
   if (board_count_player_moves(board) == 0 &&
       board_count_opponent_moves(board) == 0) {
     board->player = EMPTY_DISC;
   }
-  return true;
+  return returned_value;
 }
 
 move_t board_next_move(board_t *board) {
