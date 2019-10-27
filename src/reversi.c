@@ -31,26 +31,39 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   disc_t current_player = board_player(board);
   score_t score;
   size_t black_score;
+  size_t size = board_size(board);
   size_t white_score;
+  short int returned_value;
   while (current_player != EMPTY_DISC) {
-    if (VERBOSE) {
-      board_print(board, stdout);
-    }
-    if (current_player == BLACK_DISC) {
-      move_t move = black(board);
-      if (black == random_player) {
-        printf("row=%d, column=%d\n", move.row, move.column);
-        printf("%c plays %c%d\n", current_player, get_alpha_column(move.column),
-               move.row + 1);
+    if (current_player == BLACK_DISC) { /* turn of black player */
+      move_t move = black(board);       /* get the move */
+      if (black == random_player) {     /* if random player */
+        if (VERBOSE) {                  /* if verbose option is activated */
+          board_print(board, stdout);
+          printf("%c plays %c%zu\n", current_player,
+                 get_alpha_column(move.column), (move.row + 1));
+        }
+      } else if (black == human_player) {
+        if (move.row == size && move.column == size) {
+          fprintf(stdout, "Player 'X' resigned. player 'O' win the game.\n");
+          return -1;
+        }
       }
-      board_play(board, move);
+      board_play(board, move); /* play in all cases */
     }
-    if (current_player == WHITE_DISC) {
-      move_t move = white(board);
-      if (white == random_player) {
-        printf("row=%d, column=%d\n", move.row, move.column);
-        printf("%c plays %c%d\n", current_player, get_alpha_column(move.column),
-               move.row + 1);
+    if (current_player == WHITE_DISC) { /* turn of white player */
+      move_t move = white(board);       /* get the move */
+      if (white == random_player) {     /* if random player */
+        if (VERBOSE) {                  /* if verbose option is activated */
+          board_print(board, stdout);
+          printf("%c plays %c%zu\n", current_player,
+                 get_alpha_column(move.column), move.row + 1);
+        }
+      } else if (white == human_player) {
+        if (move.row == size && move.column == size) {
+          fprintf(stdout, "Player 'O' resigned. player 'X' win the game.\n");
+          return -2;
+        }
       }
       board_play(board, move);
     }
@@ -59,20 +72,23 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
     }
     current_player = board_player(board);
   }
+  board_print(board, stdout);
   score = board_score(board);
   black_score = score.black;
   white_score = score.white;
+  if (black_score == white_score) {
+    printf("Draw game, no winner.\n");
+    returned_value = 0;
+  }
   if (black_score > white_score) {
-    printf("black win\n");
+    printf("Player 'X' win the game.\n");
+    returned_value = 1;
   }
   if (black_score < white_score) {
-    printf("white win\n");
+    printf("Player 'O' win the game.\n");
+    returned_value = 2;
   }
-  if (black_score == white_score) {
-    printf("nobody win\n");
-    return 0;
-  }
-  return 1;
+  return returned_value;
 }
 
 static board_t *file_parser(const char *filename) {
@@ -207,7 +223,7 @@ static board_t *file_parser(const char *filename) {
   board_t *newboard = board_alloc(size, player);
   /* set value of board */
   for (size_t i = 0; i < nbr_of_disc; i++) {
-    board_set(newboard, tab_disc[i].player, tab_disc[i].x, tab_disc[i].y);
+    board_set(newboard, tab_disc[i].player, tab_disc[i].y, tab_disc[i].x);
   }
   return newboard;
 }
@@ -349,18 +365,23 @@ int main(int argc, char *argv[]) {
         err(errno, "%s", file_name);
       }
       if (contest_mode) { /* contest mode is enable */
-        /* read in contest file */
+        /******************* contest mode **********************/
+        board_t *board = file_parser(file_name); /* read in contest file */
+        move_t move = random_player(board);
+        fprintf(stdout, "%c%zu\n", get_alpha_column(move.column), move.row + 1);
+        board_free(board);
       } else { /* normal mode */
-        board_t *newboard = file_parser(file_name);
-        board_free(newboard);
+        /******************* normal mode with file **********************/
+        board_t *board = file_parser(file_name);
+        board_free(board);
       }
       fclose(file);
     } else {              /* no file is given */
       if (contest_mode) { /* contest mode is enable */
         errx(1, "Contest mode is activated but no file is given");
       }
+      /******************* normal mode without file **********************/
       board_t *board = board_init(board_size_num * 2);
-      /* TEST */
       VERBOSE = verbose;
       move_t (*blackfunc)(board_t *) = human_player;
       move_t (*whitefunc)(board_t *) = human_player;
@@ -371,7 +392,6 @@ int main(int argc, char *argv[]) {
         whitefunc = random_player;
       }
       game(blackfunc, whitefunc, board);
-      /* TEST */
       board_free(board);
     }
   }

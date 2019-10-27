@@ -393,7 +393,11 @@ int board_print(const board_t *board, FILE *fd) {
   score_t score = board_score(board);    /* set the score */
   char *space_tampon = "  ";             /* set the initial space */
   char current_char = 'A';               /* set the initial character */
-  nbr_char += fprintf(fd, "\n%c player's turn.\n", current_player);
+  if (current_player == EMPTY_DISC) {
+    nbr_char += fprintf(fd, "\nGame over.\n");
+  } else {
+    nbr_char += fprintf(fd, "\n%c player's turn.\n", current_player);
+  }
   nbr_char += fprintf(fd, "\n    ");
 
   for (size_t i = 0; i < size; i++) { /* write A B C D... */

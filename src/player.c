@@ -69,9 +69,14 @@ static void game_save(board_t *board) {
       fopen(file_name, "w+"); /* create this file if no already exist */
   fprintf(file, "%c\n", board_player(board));
   size_t size = board_size(board);
+  disc_t current_disc;
   for (size_t i = 0; i < size; i++) {
     for (size_t j = 0; j < size; j++) {
-      fprintf(file, "%c ", board_get(board, i, j));
+      current_disc = board_get(board, i, j);
+      if (current_disc == HINT_DISC) {
+        current_disc = EMPTY_DISC;
+      }
+      fprintf(file, "%c ", current_disc);
     }
     fprintf(file, "\n");
   }
