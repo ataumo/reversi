@@ -28,12 +28,35 @@ static char get_alpha_column(size_t row) {
 
 static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
                 board_t *board) {
-  disc_t current_player = board_player(board);
+  disc_t current_player = board_player(board); /* get current player */
   score_t score;
+  char *black_player_type = "human";
+  char *white_player_type = "human";
+  char *first_player = "Black";
   size_t black_score;
-  size_t size = board_size(board);
   size_t white_score;
+  size_t size = board_size(board);
   short int returned_value;
+  /* print part */
+  if (black == random_player) {
+    black_player_type = "random";
+  }
+  if (white == random_player) {
+    white_player_type = "random";
+  }
+  if (current_player == WHITE_DISC) {
+    first_player = "White";
+  }
+  fprintf(stdout,
+          "Welcome to this reversi game !\n"
+          "Black player (X) is %s and white player (O) is %s.\n"
+          "%s player start !\n",
+          black_player_type, white_player_type, first_player);
+
+  if (!VERBOSE) {
+    fprintf(stdout, "\nPlaying...\n");
+  }
+  /* main loop */
   while (current_player != EMPTY_DISC) {
     if (current_player == BLACK_DISC) { /* turn of black player */
       move_t move = black(board);       /* get the move */

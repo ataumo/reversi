@@ -1,5 +1,6 @@
 #include "player.h"
 
+/* define size of file_name string but it can be longer than 64 */
 #define MAX_LENGTH_FILE_NAME 64
 
 static void rand_init(void) {
@@ -10,13 +11,13 @@ static void rand_init(void) {
   }
 }
 
-/* return -1,-1 if no possibles moves */
 move_t random_player(board_t *board) {
   size_t nbr_poss_moves = board_count_player_moves(board);
-  if (nbr_poss_moves == 0) {
+  if (nbr_poss_moves == 0) { /* no possible move */
+    size_t size = board_size(board);
     move_t move;
-    move.row = -1;
-    move.column = -1;
+    move.row = size;
+    move.column = size;
     return move;
   }
   rand_init();
@@ -63,7 +64,7 @@ static void game_save(board_t *board) {
       current_char = getchar();
     }
   }
-  /** write section **/
+  /** writing section **/
   fprintf(stdout, "creating file with name %s\n", file_name);
   FILE *file =
       fopen(file_name, "w+"); /* create this file if no already exist */
