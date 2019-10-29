@@ -3,8 +3,22 @@
 /* define size of file_name string but it can be longer than 64 */
 #define MAX_LENGTH_FILE_NAME 64
 
+/* return the difference of score between the current player and its opponent */
+static int score_heuristic(board_t *board, disc_t player) {
+  score_t score = board_score(board);
+  if (player == BLACK_DISC) {
+    return score.black - score.white;
+  } else {
+    return score.white - score.black;
+  }
+  return 0;
+}
+
+/** RANDOM PLAYER PART **/
+
 static void rand_init(void) {
   static bool isinitialized = false;
+  printf("%d\n", isinitialized);
   if (!isinitialized) {
     srandom(time(NULL) - getpid());
     isinitialized = true;
@@ -12,14 +26,8 @@ static void rand_init(void) {
 }
 
 move_t random_player(board_t *board) {
+  /* nbr_poss_moves > 0 if random_player is run */
   size_t nbr_poss_moves = board_count_player_moves(board);
-  if (nbr_poss_moves == 0) { /* no possible move */
-    size_t size = board_size(board);
-    move_t move;
-    move.row = size;
-    move.column = size;
-    return move;
-  }
   rand_init();
   size_t r = (size_t)(random() % nbr_poss_moves);
   for (size_t i = 0; i < r; i++) {
@@ -27,6 +35,8 @@ move_t random_player(board_t *board) {
   }
   return board_next_move(board);
 }
+
+/** GAME SAVE PART **/
 
 static void clean_buffer() {
   int c = 0;
@@ -85,6 +95,8 @@ static void game_save(board_t *board) {
   free(file_name);
 }
 
+/** HUMAN PLAYER PART **/
+
 static size_t get_column(char current_char) {
   int alpha_maj[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
   int alpha_min[10] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
@@ -121,8 +133,8 @@ move_t human_player(board_t *board) {
   size_t size = board_size(board); /* get size of board */
   bool error_case = true;
   move_t move;
-  move.row = -1;
-  move.column = -1;
+  move.row = size;
+  move.column = size;
   while (error_case) {
     fprintf(stdout,
             "Give your move (e. g. 'A5' or 'a5'), press 'q' or 'Q' to quit:");

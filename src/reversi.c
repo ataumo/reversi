@@ -12,7 +12,7 @@
 #include <string.h>
 
 #define MAX_LENGTH 512
-bool VERBOSE = false;
+static bool VERBOSE = false;
 
 /* use for keep disc player in file parser */
 typedef struct {
@@ -36,8 +36,8 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   size_t black_score;
   size_t white_score;
   size_t size = board_size(board);
-  short int returned_value;
-  /* print part */
+  move_t move;
+  /*welcome print part */
   if (black == random_player) {
     black_player_type = "random";
   }
@@ -58,40 +58,44 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   }
   /* main loop */
   while (current_player != EMPTY_DISC) {
-    if (current_player == BLACK_DISC) { /* turn of black player */
-      move_t move = black(board);       /* get the move */
-      if (black == random_player) {     /* if random player */
-        if (VERBOSE) {                  /* if verbose option is activated */
-          board_print(board, stdout);
-          printf("%c plays %c%zu\n", current_player,
-                 get_alpha_column(move.column), (move.row + 1));
-        }
-      } else if (black == human_player) {
-        if (move.row == size && move.column == size) {
-          fprintf(stdout, "Player 'X' resigned. player 'O' win the game.\n");
-          return -1;
+    if (current_player == BLACK_DISC) {          /* turn of black player */
+      if (board_count_player_moves(board) > 0) { /* player can play */
+        move = black(board);                     /* get the move */
+        if (black == random_player) {            /* if random player */
+          if (VERBOSE) { /* if verbose option is activated */
+            board_print(board, stdout);
+            fprintf(stdout, "'X' plays %c%zu\n", get_alpha_column(move.column),
+                    (move.row + 1));
+          }
+        } else if (black == human_player) {
+          if (move.row == size && move.column == size) {
+            fprintf(stdout, "Player 'X' resigned. player 'O' win the game.\n");
+            return -1;
+          }
         }
       }
       board_play(board, move); /* play in all cases */
     }
     if (current_player == WHITE_DISC) { /* turn of white player */
-      move_t move = white(board);       /* get the move */
-      if (white == random_player) {     /* if random player */
-        if (VERBOSE) {                  /* if verbose option is activated */
-          board_print(board, stdout);
-          printf("%c plays %c%zu\n", current_player,
-                 get_alpha_column(move.column), move.row + 1);
-        }
-      } else if (white == human_player) {
-        if (move.row == size && move.column == size) {
-          fprintf(stdout, "Player 'O' resigned. player 'X' win the game.\n");
-          return -2;
+      if (board_count_player_moves(board) > 0) {
+        move = white(board);          /* get the move */
+        if (white == random_player) { /* if random player */
+          if (VERBOSE) {              /* if verbose option is activated */
+            board_print(board, stdout);
+            fprintf(stdout, "'O' plays %c%zu\n", get_alpha_column(move.column),
+                    move.row + 1);
+          }
+        } else if (white == human_player) {
+          if (move.row == size && move.column == size) {
+            fprintf(stdout, "Player 'O' resigned. player 'X' win the game.\n");
+            return -2;
+          }
         }
       }
-      board_play(board, move);
+      board_play(board, move); /* play in all cases */
     }
     if (VERBOSE) {
-      printf("==========================================\n");
+      fprintf(stdout, "==========================================\n");
     }
     current_player = board_player(board);
   }
@@ -99,19 +103,17 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   score = board_score(board);
   black_score = score.black;
   white_score = score.white;
-  if (black_score == white_score) {
-    printf("Draw game, no winner.\n");
-    returned_value = 0;
-  }
   if (black_score > white_score) {
-    printf("Player 'X' win the game.\n");
-    returned_value = 1;
+    fprintf(stdout, "Player 'X' win the game.\n");
+    return 1;
   }
   if (black_score < white_score) {
-    printf("Player 'O' win the game.\n");
-    returned_value = 2;
+    fprintf(stdout, "Player 'O' win the game.\n");
+    return 2;
   }
-  return returned_value;
+  /* if black_score == white_score */
+  fprintf(stdout, "Draw game, no winner.\n");
+  return 0;
 }
 
 static board_t *file_parser(const char *filename) {

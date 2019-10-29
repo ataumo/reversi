@@ -12,14 +12,15 @@
 #include <unistd.h>
 
 /* A player function 'move_t (*player_func) (board_t *)' returns a
- * chosen move depending on the given board. */
+ * chosen move depending on the given board.
+ * return value between [0,size-1]
+ * return (size,size) if no possible move exist */
 
 /* return a move given by the user through stdin */
 move_t human_player(board_t *board);
 
-/* return a random move among the possible ones
- * return value between [0,size-1]
- * return (size,size) if no possible move exist */
+/* return a random move among the possible ones */
+
 move_t random_player(board_t *board);
 
 #endif /* PLAYER_H */

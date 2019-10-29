@@ -318,36 +318,36 @@ static bitboard_t trace_move(board_t *board, const move_t move) {
 bool board_play(board_t *board, const move_t move) {
   size_t size = board->size;  /* get size */
   bool returned_value = true; /* false if invalid move is given */
-  bitboard_t trace;
   disc_t current_player = board->player;
-
-  if (current_player == BLACK_DISC) {       /* BLACK_DISC player plays */
-    if (board_is_move_valid(board, move)) { /* if move is valid */
-      trace = trace_move(board, move);      /* get the trace of direction */
-      if (board_count_player_moves(board) != 0) { /* player can't plays */
-        board->white &= ~trace;
-        board->black |= trace;
-        board->moves = compute_moves(size, board->white, board->black);
-      }
+  if (current_player == BLACK_DISC) { /* BLACK_DISC player plays */
+    /* if move is valid and player can plays */
+    if (board_is_move_valid(board, move) &&
+        board_count_player_moves(board) != 0) {
+      bitboard_t trace =
+          trace_move(board, move); /* get the trace of direction */
+      board->white &= ~trace;
+      board->black |= trace;
+      board->moves = compute_moves(size, board->white, board->black);
     } else {
       returned_value = false;
     }
-    board->player = WHITE_DISC;
-  } else if (current_player == WHITE_DISC) { /* WHITE_DISC player plays */
-    if (board_is_move_valid(board, move)) {  /* if move is valid */
-      trace = trace_move(board, move);       /* get the trace of direction */
-      if (board_count_player_moves(board) != 0) { /* player can't plays */
-        board->black &= ~trace;
-        board->white |= trace;
-        board->moves = compute_moves(size, board->black, board->white);
-      }
+    board->player = WHITE_DISC; /* alternate in all cases */
+  } else {                      /* WHITE_DISC player plays */
+    /* if move is valid an player can plays */
+    if (board_is_move_valid(board, move) &&
+        board_count_player_moves(board) != 0) {
+      bitboard_t trace =
+          trace_move(board, move); /* get the trace of direction */
+      board->black &= ~trace;
+      board->white |= trace;
+      board->moves = compute_moves(size, board->black, board->white);
     } else {
       returned_value = false;
     }
-    board->player = BLACK_DISC;
+    board->player = BLACK_DISC; /* alternate in all cases */
   }
   board->next_move = board->moves;
-  /* if black and white players can't play */
+  /* if black and white players can't play after playing */
   if (board_count_player_moves(board) == 0 &&
       board_count_opponent_moves(board) == 0) {
     board->player = EMPTY_DISC;
