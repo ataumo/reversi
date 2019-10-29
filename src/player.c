@@ -18,7 +18,6 @@ static int score_heuristic(board_t *board, disc_t player) {
 
 static void rand_init(void) {
   static bool isinitialized = false;
-  printf("%d\n", isinitialized);
   if (!isinitialized) {
     srandom(time(NULL) - getpid());
     isinitialized = true;
