@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "player.h"
 #include <board.h>
 #include <time.h>
 
@@ -554,6 +555,8 @@ int main(void) {
   EXPECT(board_player(board_2) == EMPTY_DISC, "board_player() == EMPTY_DISC");
 
   board_free(board_2);
+
+  printf("\n");
 
   t = clock() - t;
   time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds

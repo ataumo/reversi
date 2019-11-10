@@ -20,7 +20,13 @@
 move_t human_player(board_t *board);
 
 /* return a random move among the possible ones */
-
 move_t random_player(board_t *board);
+
+move_t minimax_player(board_t *board, size_t depth);
+move_t simul_minimax_player(board_t *board);
+move_t max_move(board_t *board, size_t depth);
+move_t min_move(board_t *board, size_t depth);
+
+move_t priority_borders(board_t *board);
 
 #endif /* PLAYER_H */

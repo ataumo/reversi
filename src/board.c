@@ -15,6 +15,15 @@ struct board_t {
   bitboard_t next_move;
 };
 
+#define MASK1_POPCOUNT                                                         \
+  (bitboard_t)(((bitboard_t)0x5555555555555555 << 64) | 0x5555555555555555)
+#define MASK2_POPCOUNT                                                         \
+  (bitboard_t)(((bitboard_t)0x3333333333333333 << 64) | 0x3333333333333333)
+#define MASK3_POPCOUNT                                                         \
+  (bitboard_t)(((bitboard_t)0x0F0F0F0F0F0F0F0F << 64) | 0x0F0F0F0F0F0F0F0F)
+#define MASK4_POPCOUNT                                                         \
+  (bitboard_t)(((bitboard_t)0x0101010101010101 << 64) | 0x0101010101010101)
+
 /* set the bit to 1 at row, column on the bitboard */
 /* row=[0,size-1] column=[0,size-1] */
 static bitboard_t set_bitboard(const size_t size, const size_t row,
@@ -245,18 +254,12 @@ void board_set(board_t *board, const disc_t disc, const size_t row,
   }
 }
 
-/* convert a bit sequence 64bit to 128bit */
-bitboard_t _64_to_128(bitboard_t i) { return ((i << 64) | i); }
-
 /* count the number of bits set to 1 */
 static size_t bitboard_popcount(const bitboard_t bitboard) {
   bitboard_t i = bitboard;
-  i = i - ((i >> 1) & _64_to_128(0x5555555555555555));
-  i = (i & _64_to_128(0x3333333333333333)) +
-      ((i >> 2) & _64_to_128(0x3333333333333333));
-  return (((i + (i >> 4)) & _64_to_128(0x0F0F0F0F0F0F0F0F)) *
-          _64_to_128(0x0101010101010101)) >>
-         120;
+  i = i - ((i >> 1) & MASK1_POPCOUNT);
+  i = (i & MASK2_POPCOUNT) + ((i >> 2) & MASK2_POPCOUNT);
+  return (((i + (i >> 4)) & MASK3_POPCOUNT) * MASK4_POPCOUNT) >> 120;
 }
 
 score_t board_score(const board_t *board) {

@@ -21,7 +21,7 @@ reversi.o: reversi.c reversi.h ../include/board.h ../include/player.h
 board.o: board.c ../include/board.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
 
-player.o: player.c ../include/player.h
+player.o: player.c ../include/player.h ../include/board.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
 
 clean:

@@ -12,7 +12,13 @@
 #include <string.h>
 
 #define MAX_LENGTH 512
-static bool VERBOSE = false;
+/* define number of player functions and change array */
+#define NBR_PLAY_FUNC 3
+static move_t (*play_func[NBR_PLAY_FUNC])(board_t *board) = {
+    human_player, random_player, simul_minimax_player};
+static char *name_play_func[NBR_PLAY_FUNC] = {"human", "random", "minimax"};
+
+static bool VERBOSE = false; /* verbose variable */
 
 /* use for keep disc player in file parser */
 typedef struct {
@@ -30,22 +36,24 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
                 board_t *board) {
   disc_t current_player = board_player(board); /* get current player */
   score_t score;
-  char *black_player_type = "human";
-  char *white_player_type = "human";
-  char *first_player = "Black";
   size_t black_score;
   size_t white_score;
   size_t size = board_size(board);
   move_t move;
   /*welcome print part */
-  if (black == random_player) {
-    black_player_type = "random";
-  }
-  if (white == random_player) {
-    white_player_type = "random";
-  }
+  char *black_player_type;
+  char *white_player_type;
+  char *first_player = "Black";
   if (current_player == WHITE_DISC) {
     first_player = "White";
+  }
+  for (size_t i = 0; i < NBR_PLAY_FUNC; i++) {
+    if (black == play_func[i]) {
+      black_player_type = name_play_func[i];
+    }
+    if (white == play_func[i]) {
+      white_player_type = name_play_func[i];
+    }
   }
   fprintf(stdout,
           "Welcome to this reversi game !\n"
@@ -61,16 +69,16 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
     if (current_player == BLACK_DISC) {          /* turn of black player */
       if (board_count_player_moves(board) > 0) { /* player can play */
         move = black(board);                     /* get the move */
-        if (black == random_player) {            /* if random player */
+        if (black == human_player) {
+          if (move.row == size && move.column == size) {
+            fprintf(stdout, "Player 'X' resigned. player 'O' win the game.\n");
+            return -1;
+          }
+        } else {         /* if random player or others */
           if (VERBOSE) { /* if verbose option is activated */
             board_print(board, stdout);
             fprintf(stdout, "'X' plays %c%zu\n", get_alpha_column(move.column),
                     (move.row + 1));
-          }
-        } else if (black == human_player) {
-          if (move.row == size && move.column == size) {
-            fprintf(stdout, "Player 'X' resigned. player 'O' win the game.\n");
-            return -1;
           }
         }
       }
@@ -78,17 +86,17 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
     }
     if (current_player == WHITE_DISC) { /* turn of white player */
       if (board_count_player_moves(board) > 0) {
-        move = white(board);          /* get the move */
-        if (white == random_player) { /* if random player */
-          if (VERBOSE) {              /* if verbose option is activated */
-            board_print(board, stdout);
-            fprintf(stdout, "'O' plays %c%zu\n", get_alpha_column(move.column),
-                    move.row + 1);
-          }
-        } else if (white == human_player) {
+        move = white(board); /* get the move */
+        if (white == human_player) {
           if (move.row == size && move.column == size) {
             fprintf(stdout, "Player 'O' resigned. player 'X' win the game.\n");
             return -2;
+          }
+        } else {         /* if random player or others */
+          if (VERBOSE) { /* if verbose option is activated */
+            board_print(board, stdout);
+            fprintf(stdout, "'O' plays %c%zu\n", get_alpha_column(move.column),
+                    move.row + 1);
           }
         }
       }
@@ -279,9 +287,10 @@ int main(int argc, char *argv[]) {
   /* boolean variables */
   bool contest_mode = false;  /* true if -c option is given */
   bool file_argument = false; /* true if file argument is given */
-  bool tactic_b_player = 0;   /* 0 if humain plays, 1 if it is random */
-  bool tactic_w_player = 0;   /* 0 if humain plays, 1 if it is random */
-  bool verbose = false;       /* verbose variable */
+  int tactic_b_player =
+      2; /* 0 if humain plays, 1 if it is random, 2 if minimax player */
+  int tactic_w_player =
+      2; /* 0 if humain plays, 1 if it is random, 2 if minimax player */
 
   /* integer variables */
   int cpt_of_file = 0; /* number of file argument */
@@ -314,13 +323,9 @@ int main(int argc, char *argv[]) {
         if (strlen(optarg) != 1) {
           errx(1, "the argument of -b option is too long");
         }
-        switch (int_optarg) {
-        case 0: /* human tactic */
-          break;
-        case 1: /* random tactic */
-          break;
-        default:
-          errx(1, "the argument of -b option should be 0 or 1");
+        if (int_optarg > NBR_PLAY_FUNC - 1) {
+          errx(1, "the argument of -w option should be 0 to %d",
+               NBR_PLAY_FUNC - 1);
         }
         tactic_b_player = int_optarg;
       }
@@ -332,13 +337,9 @@ int main(int argc, char *argv[]) {
         if (strlen(optarg) != 1) {
           errx(1, "the argument of -w option is too long");
         }
-        switch (int_optarg) {
-        case 0: /* human tactic */
-          break;
-        case 1: /* random tactic */
-          break;
-        default:
-          errx(1, "the argument of -w option should be 0 or 1");
+        if (int_optarg > NBR_PLAY_FUNC - 1) {
+          errx(1, "the argument of -w option should be 0 to %d",
+               NBR_PLAY_FUNC - 1);
         }
         tactic_w_player = int_optarg;
       }
@@ -349,7 +350,7 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'v': /* 'verbose' option */
-      verbose = true;
+      VERBOSE = true;
       break;
 
     case 'V':               /* 'version' option */
@@ -384,20 +385,25 @@ int main(int argc, char *argv[]) {
   if (cpt_of_file > 1) { /* more than 1 file is given */
     errx(1, "You must to give 1 file for the contest mode");
   } else {
+    /***********************************************/
+    move_t (*blackfunc)(board_t *) = play_func[tactic_b_player];
+    move_t (*whitefunc)(board_t *) = play_func[tactic_w_player];
+    /***********************************************/
     if (file_argument) { /* file argument is given */
       file = fopen(file_name, "r+");
       if (file == NULL) { /* The given argument is not a readable file */
         err(errno, "%s", file_name);
+        exit(EXIT_FAILURE);
       }
       if (contest_mode) { /* contest mode is enable */
         /******************* contest mode **********************/
         board_t *board = file_parser(file_name); /* read in contest file */
-        move_t move = random_player(board);
-        fprintf(stdout, "%c%zu\n", get_alpha_column(move.column), move.row + 1);
+        game(blackfunc, whitefunc, board);
         board_free(board);
       } else { /* normal mode */
         /******************* normal mode with file **********************/
         board_t *board = file_parser(file_name);
+        game(blackfunc, whitefunc, board);
         board_free(board);
       }
       fclose(file);
@@ -407,15 +413,6 @@ int main(int argc, char *argv[]) {
       }
       /******************* normal mode without file **********************/
       board_t *board = board_init(board_size_num * 2);
-      VERBOSE = verbose;
-      move_t (*blackfunc)(board_t *) = human_player;
-      move_t (*whitefunc)(board_t *) = human_player;
-      if (tactic_b_player == 1) {
-        blackfunc = random_player;
-      }
-      if (tactic_w_player == 1) {
-        whitefunc = random_player;
-      }
       game(blackfunc, whitefunc, board);
       board_free(board);
     }

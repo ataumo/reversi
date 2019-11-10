@@ -18,10 +18,8 @@ board_tests: board_tests.o board.o
 board.o: ../src/board.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $^
 
-board_test.o: board_tests.c
+board_test.o: board_tests.c ../include/board.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $^
-
-
 
 clean:
 	@rm -f *~ *.o $(EXE)
