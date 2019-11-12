@@ -15,8 +15,8 @@
 /* define number of player functions and change array */
 #define NBR_PLAY_FUNC 3
 static move_t (*play_func[NBR_PLAY_FUNC])(board_t *board) = {
-    human_player, random_player, simul_minimax_player};
-static char *name_play_func[NBR_PLAY_FUNC] = {"human", "random", "minimax"};
+    human_player, random_player, simul_best_player};
+static char *name_play_func[NBR_PLAY_FUNC] = {"human", "random", "best player"};
 
 static bool VERBOSE = false; /* verbose variable */
 
