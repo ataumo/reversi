@@ -13,10 +13,12 @@
 
 #define MAX_LENGTH 512
 /* define number of player functions and change array */
-#define NBR_PLAY_FUNC 3
+#define NBR_PLAY_FUNC 4
 static move_t (*play_func[NBR_PLAY_FUNC])(board_t *board) = {
-    human_player, random_player, simul_best_player};
-static char *name_play_func[NBR_PLAY_FUNC] = {"human", "random", "best player"};
+    human_player, random_player, simul_alpha_beta_player,
+    simul_alpha_beta_move_player};
+static char *name_play_func[NBR_PLAY_FUNC] = {
+    "human", "random", "alpha_beta_player", "alpha_beta_move_player"};
 
 static bool VERBOSE = false; /* verbose variable */
 

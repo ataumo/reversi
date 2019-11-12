@@ -54,25 +54,90 @@ move_t priority_borders(board_t *board) {
 /** SIMUL BEST PLAYER **/
 
 move_t simul_best_player(board_t *board) {
-  return alpha_beta_player(board, 9);
+  // return alpha_beta_player(board, 4);
+  return simul_alpha_beta_player(board);
   // return minimax_player(board, 5);
+}
+
+/** MINIMAX MOVES ALPHA BETA PLAYER **/
+move_t simul_alpha_beta_move_player(board_t *board) {
+  return alpha_beta_move_player(board, 9);
+}
+
+move_t alpha_beta_move_player(board_t *board, size_t depth) {
+  disc_t current_player = board_player(board);
+  int best_score = -INFINITY;
+  move_t best_move;
+  size_t nbr_poss_moves = board_count_player_moves(board);
+  for (size_t i = 0; i < nbr_poss_moves; i++) {
+
+    board_t *tmp_board = board_copy(board);
+    move_t current_move = board_next_move(board);
+    if (i == 0) {
+      best_move = current_move;
+    }
+    board_play(tmp_board, current_move);
+    int score = alpha_beta_move_machine(tmp_board, depth - 1, -INFINITY,
+                                        INFINITY, current_player);
+    if (score >= best_score) {
+      best_score = score;
+      best_move = current_move;
+    }
+    board_free(tmp_board);
+  }
+  return best_move;
+}
+
+int alpha_beta_move_machine(board_t *board, size_t depth, int alpha, int beta,
+                            disc_t player) {
+  disc_t current_player = board_player(board);
+  if (current_player == EMPTY_DISC || depth == 0) {
+    return score_heuristic(board, player);
+  }
+  int best_score;
+  if (current_player == player) {
+    best_score = -INFINITY;
+    size_t nbr_poss_moves = board_count_player_moves(board);
+    for (size_t i = 0; i < nbr_poss_moves; i++) {
+      board_t *tmp_board = board_copy(board);
+      move_t current_move = board_next_move(board);
+      board_play(tmp_board, current_move);
+      int score =
+          alpha_beta_move_machine(tmp_board, depth - 1, alpha, beta, player);
+      if (score >= alpha) {
+        alpha = score;
+        if (alpha >= beta) {
+          break;
+        }
+      }
+      board_free(tmp_board);
+    }
+    return alpha;
+  } else {
+    best_score = INFINITY;
+    size_t nbr_poss_moves = board_count_player_moves(board);
+    for (size_t i = 0; i < nbr_poss_moves; i++) {
+      board_t *tmp_board = board_copy(board);
+      move_t current_move = board_next_move(board);
+      board_play(tmp_board, current_move);
+      int score =
+          alpha_beta_move_machine(tmp_board, depth - 1, alpha, beta, player);
+      if (score <= beta) {
+        beta = score;
+        if (alpha >= beta) {
+          break;
+        }
+      }
+      board_free(tmp_board);
+    }
+    return beta;
+  }
 }
 
 /** MINIMAX ALPHA BETA PLAYER **/
 
 move_t simul_alpha_beta_player(board_t *board) {
-  // return minimax_player(board, 1);
-  int score = score_heuristic(board, board_player(board));
-  if (score <= 0) {
-    return alpha_beta_player(board, 4);
-  }
-  if (score <= 10) {
-    return alpha_beta_player(board, 3);
-  }
-  if (score <= 20) {
-    return alpha_beta_player(board, 2);
-  }
-  return alpha_beta_player(board, 1);
+  return alpha_beta_player(board, 4);
 }
 
 move_t alpha_beta_player(board_t *board, size_t depth) {

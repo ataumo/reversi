@@ -33,6 +33,11 @@ move_t alpha_beta_player(board_t *board, size_t depth);
 int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
                        disc_t player);
 
+move_t simul_alpha_beta_move_player(board_t *board);
+move_t alpha_beta_move_player(board_t *board, size_t depth);
+int alpha_beta_move_machine(board_t *board, size_t depth, int alpha, int beta,
+                            disc_t player);
+
 move_t priority_borders(board_t *board);
 
 #endif /* PLAYER_H */
