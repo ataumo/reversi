@@ -54,8 +54,8 @@ move_t priority_borders(board_t *board) {
 /** SIMUL BEST PLAYER **/
 
 move_t simul_best_player(board_t *board) {
-  // return alpha_beta_player(board, 2);
-  return minimax_player(board, 2);
+  return alpha_beta_player(board, 9);
+  // return minimax_player(board, 5);
 }
 
 /** MINIMAX ALPHA BETA PLAYER **/

@@ -4,7 +4,6 @@ src/reversi
 src/*.o
 .DS_Store
 board_parser
-check_parser_results.py
 file.txt
 test/board_tests
 test/my_tests.c
