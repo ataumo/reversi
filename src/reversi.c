@@ -16,9 +16,9 @@
 #define NBR_PLAY_FUNC 4
 static move_t (*play_func[NBR_PLAY_FUNC])(board_t *board) = {
     human_player, random_player, simul_alpha_beta_player,
-    simul_alpha_beta_move_player};
+    simul_alpha_beta_bis_player};
 static char *name_play_func[NBR_PLAY_FUNC] = {
-    "human", "random", "alpha_beta_player", "alpha_beta_move_player"};
+    "human", "random", "alpha_beta_player", "alpha_beta_bis_player"};
 
 static bool VERBOSE = false; /* verbose variable */
 

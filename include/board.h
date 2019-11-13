@@ -12,6 +12,25 @@
 /* Size of shift array */
 #define SIZE_SHIFT_ARRAY 8
 
+/* Popcount masks */
+#define MASK1_POPCOUNT                                                         \
+  (bitboard_t)(((bitboard_t)0x5555555555555555 << 64) | 0x5555555555555555)
+#define MASK2_POPCOUNT                                                         \
+  (bitboard_t)(((bitboard_t)0x3333333333333333 << 64) | 0x3333333333333333)
+#define MASK3_POPCOUNT                                                         \
+  (bitboard_t)(((bitboard_t)0x0F0F0F0F0F0F0F0F << 64) | 0x0F0F0F0F0F0F0F0F)
+#define MASK4_POPCOUNT                                                         \
+  (bitboard_t)(((bitboard_t)0x0101010101010101 << 64) | 0x0101010101010101)
+
+/* Shifts masks */
+#define MASK_BITB_BOTTOM_6 (bitboard_t)(((bitboard_t)0x3F << 36))
+#define MASK_BITB_BOTTOM_8 (bitboard_t)(((bitboard_t)0xFF << 64))
+#define MASK_BITB_BOTTOM_10 (bitboard_t)(((bitboard_t)0x3FF << 100))
+#define MASK_BITB_RIGHT_10                                                     \
+  (bitboard_t)(((bitboard_t)0x2008020080200 << 50) | 0x2008020080200)
+#define MASK_BITB_LEFT_10                                                      \
+  (bitboard_t)(((bitboard_t)0x10040100401 << 50) | 0x10040100401)
+
 /* Board discs */
 typedef enum {
   BLACK_DISC = 'X',

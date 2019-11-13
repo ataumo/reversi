@@ -15,15 +15,6 @@ struct board_t {
   bitboard_t next_move;
 };
 
-#define MASK1_POPCOUNT                                                         \
-  (bitboard_t)(((bitboard_t)0x5555555555555555 << 64) | 0x5555555555555555)
-#define MASK2_POPCOUNT                                                         \
-  (bitboard_t)(((bitboard_t)0x3333333333333333 << 64) | 0x3333333333333333)
-#define MASK3_POPCOUNT                                                         \
-  (bitboard_t)(((bitboard_t)0x0F0F0F0F0F0F0F0F << 64) | 0x0F0F0F0F0F0F0F0F)
-#define MASK4_POPCOUNT                                                         \
-  (bitboard_t)(((bitboard_t)0x0101010101010101 << 64) | 0x0101010101010101)
-
 /* set the bit to 1 at row, column on the bitboard */
 /* row=[0,size-1] column=[0,size-1] */
 static bitboard_t set_bitboard(const size_t size, const size_t row,
@@ -38,62 +29,49 @@ static bitboard_t shift_north(const size_t size, const bitboard_t bitboard) {
 }
 
 static bitboard_t shift_south(const size_t size, const bitboard_t bitboard) {
-  bitboard_t bitboard_bottom;
   switch (size) {
   case 2:
     return (bitboard << size) & ~0x30;
   case 4:
     return (bitboard << size) & ~0xF0000;
   case 6:
-    bitboard_bottom = 0x3F;
-    return (bitboard << size) & ~(bitboard_bottom << 36);
+    return (bitboard << size) & ~MASK_BITB_BOTTOM_6;
   case 8:
-    bitboard_bottom = 0xFF;
-    return (bitboard << size) & ~(bitboard_bottom << 64);
+    return (bitboard << size) & ~MASK_BITB_BOTTOM_8;
   case 10:
-    bitboard_bottom = 0x3FF;
-    return (bitboard << size) & ~(bitboard_bottom << 100);
+    return (bitboard << size) & ~MASK_BITB_BOTTOM_10;
   }
   return -1;
 }
 
 static bitboard_t shift_west(const size_t size, const bitboard_t bitboard) {
-  bitboard_t bitboard_right;
   switch (size) {
   case 2:
-    return (bitboard >> 1) & ~(0xA);
+    return (bitboard >> 1) & ~0xA;
   case 4:
-    return (bitboard >> 1) & ~(0x8888);
+    return (bitboard >> 1) & ~0x8888;
   case 6:
-    return (bitboard >> 1) & ~(0x820820820);
+    return (bitboard >> 1) & ~0x820820820;
   case 8:
-    return (bitboard >> 1) & ~(0x8080808080808080);
+    return (bitboard >> 1) & ~0x8080808080808080;
   case 10:
-    bitboard_right = 0x2008020080200;
-    return (bitboard >> 1) & ~((bitboard_right << 50) | bitboard_right);
+    return (bitboard >> 1) & ~MASK_BITB_RIGHT_10;
   }
   return -1;
 }
 
 static bitboard_t shift_est(const size_t size, const bitboard_t bitboard) {
-  bitboard_t bitboard_left;
-  bitboard_t bitboard_bottom;
   switch (size) {
   case 2:
     return (bitboard << 1) & ~0x5 & ~0x30;
   case 4:
     return (bitboard << 1) & ~0x1111 & ~0xF0000;
   case 6:
-    bitboard_bottom = 0x3F;
-    return (bitboard << 1) & ~0x41041041 & ~(bitboard_bottom << 36);
+    return (bitboard << 1) & ~0x41041041 & ~MASK_BITB_BOTTOM_6;
   case 8:
-    bitboard_bottom = 0xFF;
-    return (bitboard << 1) & ~(0x101010101010101) & ~(bitboard_bottom << 64);
+    return (bitboard << 1) & ~0x101010101010101 & ~MASK_BITB_BOTTOM_8;
   case 10:
-    bitboard_left = 0x10040100401;
-    bitboard_bottom = 0x3FF;
-    return (bitboard << 1) & ~((bitboard_left << 50) | bitboard_left) &
-           ~(bitboard_bottom << 100);
+    return (bitboard << 1) & ~MASK_BITB_LEFT_10 & ~MASK_BITB_BOTTOM_10;
   }
   return -1;
 }
@@ -304,7 +282,7 @@ static bitboard_t trace_move(board_t *board, const move_t move) {
   bitboard_t final_trace = 0;
   bitboard_t shift;
 
-  for (size_t i = 0; i < 8; i++) {
+  for (size_t i = 0; i < SIZE_SHIFT_ARRAY; i++) {
     trace = start;
     shift = shift_func[i](size, start);
     while ((shift & opponent) != 0) {

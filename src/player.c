@@ -4,6 +4,8 @@
 #define MAX_LENGTH_FILE_NAME 64
 #define INFINITY 32767
 
+/** HEURISTIC PART **/
+
 /* return the difference of score between the current player and its opponent */
 static int score_heuristic(board_t *board, disc_t player) {
   score_t score = board_score(board);
@@ -13,6 +15,19 @@ static int score_heuristic(board_t *board, disc_t player) {
     return score.white - score.black;
   }
   return 0;
+}
+
+static int score_heuristic_bis(board_t *board, disc_t player) {
+  score_t score = board_score(board);
+  int int_score = 0;
+  if (player == BLACK_DISC) {
+    int_score = score.black - score.white;
+  } else {
+    int_score = score.white - score.black;
+  }
+  size_t nbr_poss_moves = board_count_player_moves(board);
+  size_t size = board_size(board);
+  return int_score - nbr_poss_moves;
 }
 
 /** AI TEST **/
@@ -54,57 +69,26 @@ move_t priority_borders(board_t *board) {
 /** SIMUL BEST PLAYER **/
 
 move_t simul_best_player(board_t *board) {
-  // return alpha_beta_player(board, 4);
   return simul_alpha_beta_player(board);
-  // return minimax_player(board, 5);
 }
 
-/** MINIMAX MOVES ALPHA BETA PLAYER **/
-move_t simul_alpha_beta_move_player(board_t *board) {
-  return alpha_beta_move_player(board, 9);
-}
+/** MINIMAX NEGAMAX ALPHA BETA PLAYER **/
 
-move_t alpha_beta_move_player(board_t *board, size_t depth) {
-  disc_t current_player = board_player(board);
-  int best_score = -INFINITY;
-  move_t best_move;
-  size_t nbr_poss_moves = board_count_player_moves(board);
-  for (size_t i = 0; i < nbr_poss_moves; i++) {
-
-    board_t *tmp_board = board_copy(board);
-    move_t current_move = board_next_move(board);
-    if (i == 0) {
-      best_move = current_move;
-    }
-    board_play(tmp_board, current_move);
-    int score = alpha_beta_move_machine(tmp_board, depth - 1, -INFINITY,
-                                        INFINITY, current_player);
-    if (score >= best_score) {
-      best_score = score;
-      best_move = current_move;
-    }
-    board_free(tmp_board);
-  }
-  return best_move;
-}
-
-int alpha_beta_move_machine(board_t *board, size_t depth, int alpha, int beta,
-                            disc_t player) {
+static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
+                                  int beta, disc_t player) {
   disc_t current_player = board_player(board);
   if (current_player == EMPTY_DISC || depth == 0) {
-    return score_heuristic(board, player);
+    return score_heuristic_bis(board, player);
   }
-  int best_score;
   if (current_player == player) {
-    best_score = -INFINITY;
     size_t nbr_poss_moves = board_count_player_moves(board);
     for (size_t i = 0; i < nbr_poss_moves; i++) {
       board_t *tmp_board = board_copy(board);
       move_t current_move = board_next_move(board);
       board_play(tmp_board, current_move);
       int score =
-          alpha_beta_move_machine(tmp_board, depth - 1, alpha, beta, player);
-      if (score >= alpha) {
+          alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
+      if (score > alpha) {
         alpha = score;
         if (alpha >= beta) {
           break;
@@ -114,14 +98,13 @@ int alpha_beta_move_machine(board_t *board, size_t depth, int alpha, int beta,
     }
     return alpha;
   } else {
-    best_score = INFINITY;
     size_t nbr_poss_moves = board_count_player_moves(board);
     for (size_t i = 0; i < nbr_poss_moves; i++) {
       board_t *tmp_board = board_copy(board);
       move_t current_move = board_next_move(board);
       board_play(tmp_board, current_move);
       int score =
-          alpha_beta_move_machine(tmp_board, depth - 1, alpha, beta, player);
+          alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
       if (score <= beta) {
         beta = score;
         if (alpha >= beta) {
@@ -134,13 +117,7 @@ int alpha_beta_move_machine(board_t *board, size_t depth, int alpha, int beta,
   }
 }
 
-/** MINIMAX ALPHA BETA PLAYER **/
-
-move_t simul_alpha_beta_player(board_t *board) {
-  return alpha_beta_player(board, 4);
-}
-
-move_t alpha_beta_player(board_t *board, size_t depth) {
+static move_t alpha_beta_bis_player(board_t *board, size_t depth) {
   disc_t current_player = board_player(board);
   int best_score = -INFINITY;
   move_t best_move;
@@ -153,8 +130,8 @@ move_t alpha_beta_player(board_t *board, size_t depth) {
       best_move = current_move;
     }
     board_play(tmp_board, current_move);
-    int score = alpha_beta_machine(tmp_board, depth - 1, -INFINITY, INFINITY,
-                                   current_player);
+    int score = alpha_beta_bis_machine(tmp_board, depth - 1, -INFINITY,
+                                       INFINITY, current_player);
     if (score > best_score) {
       best_score = score;
       best_move = current_move;
@@ -164,8 +141,14 @@ move_t alpha_beta_player(board_t *board, size_t depth) {
   return best_move;
 }
 
-int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
-                       disc_t player) {
+move_t simul_alpha_beta_bis_player(board_t *board) {
+  return alpha_beta_bis_player(board, DEPTH_ALPHABETA_BIS);
+}
+
+/** MINIMAX ALPHA BETA PLAYER **/
+
+static int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
+                              disc_t player) {
   disc_t current_player = board_player(board);
   if (current_player == EMPTY_DISC || depth == 0) {
     return score_heuristic(board, player);
@@ -208,27 +191,10 @@ int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
   }
 }
 
-/** MINIMAX PLAYER PART **/
-move_t simul_minimax_player(board_t *board) {
-  // return minimax_player(board, 1);
-  int score = score_heuristic(board, board_player(board));
-  if (score <= 0) {
-    return minimax_player(board, 6);
-  }
-  if (score <= 5) {
-    return minimax_player(board, 5);
-  }
-  if (score <= 7) {
-    return minimax_player(board, 4);
-  }
-  return minimax_player(board, 1);
-}
-
-move_t minimax_player(board_t *board, size_t depth) {
+static move_t alpha_beta_player(board_t *board, size_t depth) {
   disc_t current_player = board_player(board);
   int best_score = -INFINITY;
   move_t best_move;
-
   size_t nbr_poss_moves = board_count_player_moves(board);
   for (size_t i = 0; i < nbr_poss_moves; i++) {
 
@@ -238,7 +204,8 @@ move_t minimax_player(board_t *board, size_t depth) {
       best_move = current_move;
     }
     board_play(tmp_board, current_move);
-    int score = minimax_machine(tmp_board, depth - 1, current_player);
+    int score = alpha_beta_machine(tmp_board, depth - 1, -INFINITY, INFINITY,
+                                   current_player);
     if (score > best_score) {
       best_score = score;
       best_move = current_move;
@@ -248,7 +215,13 @@ move_t minimax_player(board_t *board, size_t depth) {
   return best_move;
 }
 
-int minimax_machine(board_t *board, size_t depth, disc_t player) {
+move_t simul_alpha_beta_player(board_t *board) {
+  return alpha_beta_player(board, DEPTH_ALPHABETA);
+}
+
+/** MINIMAX PLAYER PART **/
+
+static int minimax_machine(board_t *board, size_t depth, disc_t player) {
   disc_t current_player = board_player(board);
   if (current_player == EMPTY_DISC || depth == 0) {
     return score_heuristic(board, player);
@@ -282,6 +255,34 @@ int minimax_machine(board_t *board, size_t depth, disc_t player) {
     }
   }
   return best_score;
+}
+
+static move_t minimax_player(board_t *board, size_t depth) {
+  disc_t current_player = board_player(board);
+  int best_score = -INFINITY;
+  move_t best_move;
+
+  size_t nbr_poss_moves = board_count_player_moves(board);
+  for (size_t i = 0; i < nbr_poss_moves; i++) {
+
+    board_t *tmp_board = board_copy(board);
+    move_t current_move = board_next_move(board);
+    if (i == 0) {
+      best_move = current_move;
+    }
+    board_play(tmp_board, current_move);
+    int score = minimax_machine(tmp_board, depth - 1, current_player);
+    if (score > best_score) {
+      best_score = score;
+      best_move = current_move;
+    }
+    board_free(tmp_board);
+  }
+  return best_move;
+}
+
+move_t simul_minimax_player(board_t *board) {
+  return minimax_player(board, DEPTH_MINIMAX);
 }
 
 /** RANDOM PLAYER PART **/
@@ -343,6 +344,7 @@ static void game_save(board_t *board) {
             return;
           }
           new_file_name = file_name;
+          free(new_file_name);
           file_name = calloc(MAX_LENGTH_FILE_NAME + nbr_out, sizeof(char));
           if (file_name == NULL) {
             return;
