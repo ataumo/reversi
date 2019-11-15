@@ -39,7 +39,7 @@ def test_game_time(n,depth):
     p=0
     for i in range(nbr_test):
         current_time = time.time()
-        process = subprocess.Popen(["./reversi","-s3","-b4","-w1"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(["./reversi","-s3","-b1","-w1"], stdout=subprocess.PIPE)
         stdout = process.communicate()[0]
         if "Player 'X' win the game." in 'STDOUT:{}'.format(stdout):
             nbr_win=nbr_win+1
