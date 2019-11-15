@@ -226,11 +226,11 @@ static move_t alpha_beta_player(board_t *board, size_t depth) {
     board_play(tmp_board, current_move);
     int score = alpha_beta_machine(tmp_board, depth - 1, -INFINITY, INFINITY,
                                    current_player);
+    board_free(tmp_board);
     if (score > best_score) {
       best_score = score;
       best_move = current_move;
     }
-    board_free(tmp_board);
   }
   return best_move;
 }
