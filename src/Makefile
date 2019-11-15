@@ -2,7 +2,7 @@
 EXE = reversi
 
 # Usual compilation flags
-CFLAGS = -std=c11 -Wall -Wextra -g -O2
+CFLAGS = -std=c11 -Wall -Wextra -g
 CPPFLAGS = -I../include -DDEBUG
 LDFLAGS =
 

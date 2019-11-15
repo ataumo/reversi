@@ -303,9 +303,9 @@ int main(int argc, char *argv[]) {
   bool contest_mode = false;  /* true if -c option is given */
   bool file_argument = false; /* true if file argument is given */
   int tactic_b_player =
-      2; /* 0 if humain plays, 1 if it is random, 2 if minimax player */
+      0; /* 0 if humain plays, 1 if it is random, 2 if minimax player */
   int tactic_w_player =
-      2; /* 0 if humain plays, 1 if it is random, 2 if minimax player */
+      0; /* 0 if humain plays, 1 if it is random, 2 if minimax player */
 
   /* integer variables */
   int cpt_of_file = 0; /* number of file argument */
@@ -428,7 +428,7 @@ int main(int argc, char *argv[]) {
       }
       /******************* normal mode without file **********************/
       board_t *board = board_init(board_size_num * 2);
-      // game(blackfunc, whitefunc, board);
+      game(blackfunc, whitefunc, board);
       board_free(board);
     }
   }

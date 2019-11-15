@@ -98,7 +98,6 @@ static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
                                   int beta, disc_t player) {
   disc_t current_player = board_player(board);
   if (current_player == EMPTY_DISC || depth == 0) {
-    board_free(board);
     return score_heuristic_bis(board, player);
   }
   if (current_player == player) {
@@ -172,12 +171,10 @@ static int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
                               disc_t player) {
   disc_t current_player = board_player(board);
   if (current_player == EMPTY_DISC || depth == 0) {
-    board_free(board);
     return score_heuristic(board, player);
   }
   int best_score;
   if (current_player == player) {
-    best_score = -INFINITY;
     size_t nbr_poss_moves = board_count_player_moves(board);
     for (size_t i = 0; i < nbr_poss_moves; i++) {
       board_t *tmp_board = board_copy(board);
@@ -194,7 +191,6 @@ static int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
     }
     return alpha;
   } else {
-    best_score = INFINITY;
     size_t nbr_poss_moves = board_count_player_moves(board);
     for (size_t i = 0; i < nbr_poss_moves; i++) {
       board_t *tmp_board = board_copy(board);
