@@ -428,7 +428,7 @@ int main(int argc, char *argv[]) {
       }
       /******************* normal mode without file **********************/
       board_t *board = board_init(board_size_num * 2);
-      game(blackfunc, whitefunc, board);
+      // game(blackfunc, whitefunc, board);
       board_free(board);
     }
   }
