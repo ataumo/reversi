@@ -108,13 +108,13 @@ static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
       board_play(tmp_board, current_move);
       int score =
           alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
+      board_free(tmp_board);
       if (score > alpha) {
         alpha = score;
         if (alpha >= beta) {
           break;
         }
       }
-      board_free(tmp_board);
     }
     return alpha;
   } else {
@@ -125,13 +125,13 @@ static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
       board_play(tmp_board, current_move);
       int score =
           alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
+      board_free(tmp_board);
       if (score < beta) {
         beta = score;
         if (alpha >= beta) {
           break;
         }
       }
-      board_free(tmp_board);
     }
     return beta;
   }
@@ -182,13 +182,13 @@ static int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
       move_t current_move = board_next_move(board);
       board_play(tmp_board, current_move);
       int score = alpha_beta_machine(tmp_board, depth - 1, alpha, beta, player);
+      board_free(tmp_board);
       if (score > alpha) {
         alpha = score;
         if (alpha >= beta) {
           break;
         }
       }
-      board_free(tmp_board);
     }
     return alpha;
   } else {
@@ -199,13 +199,13 @@ static int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
       move_t current_move = board_next_move(board);
       board_play(tmp_board, current_move);
       int score = alpha_beta_machine(tmp_board, depth - 1, alpha, beta, player);
+      board_free(tmp_board);
       if (score < beta) {
         beta = score;
         if (alpha >= beta) {
           break;
         }
       }
-      board_free(tmp_board);
     }
     return beta;
   }
