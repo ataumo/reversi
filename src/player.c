@@ -98,6 +98,7 @@ static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
                                   int beta, disc_t player) {
   disc_t current_player = board_player(board);
   if (current_player == EMPTY_DISC || depth == 0) {
+    board_free(board);
     return score_heuristic_bis(board, player);
   }
   if (current_player == player) {
@@ -171,6 +172,7 @@ static int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
                               disc_t player) {
   disc_t current_player = board_player(board);
   if (current_player == EMPTY_DISC || depth == 0) {
+    board_free(board);
     return score_heuristic(board, player);
   }
   int best_score;
