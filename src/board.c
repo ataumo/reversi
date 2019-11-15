@@ -300,39 +300,41 @@ bool board_play(board_t *board, const move_t move) {
   size_t size = board->size;  /* get size */
   bool returned_value = true; /* false if invalid move is given */
   disc_t current_player = board->player;
+
   if (current_player == BLACK_DISC) { /* BLACK_DISC player plays */
-    /* if move is valid and player can plays */
-    if (board_is_move_valid(board, move) &&
-        board_count_player_moves(board) != 0) {
+    if (board_count_player_moves(board) != 0 &&
+        board_is_move_valid(board, move)) {
       bitboard_t trace =
           trace_move(board, move); /* get the trace of direction */
       board->white &= ~trace;
       board->black |= trace;
-      board->moves = compute_moves(size, board->white, board->black);
-    } else {
+    } else { /* invalid move */
       returned_value = false;
     }
+    board->moves = compute_moves(size, board->white, board->black);
     board->player = WHITE_DISC; /* alternate in all cases */
   } else {                      /* WHITE_DISC player plays */
     /* if move is valid an player can plays */
-    if (board_is_move_valid(board, move) &&
-        board_count_player_moves(board) != 0) {
+    if (board_count_player_moves(board) != 0 &&
+        board_is_move_valid(board, move)) {
       bitboard_t trace =
           trace_move(board, move); /* get the trace of direction */
       board->black &= ~trace;
       board->white |= trace;
-      board->moves = compute_moves(size, board->black, board->white);
-    } else {
+    } else { /* invalid move */
       returned_value = false;
     }
+    board->moves = compute_moves(size, board->black, board->white);
     board->player = BLACK_DISC; /* alternate in all cases */
   }
   board->next_move = board->moves;
   /* if black and white players can't play after playing */
-  if (board_count_player_moves(board) == 0 &&
-      board_count_opponent_moves(board) == 0) {
+  if (board_count_opponent_moves(board) == 0 &&
+      board_count_player_moves(board) == 0) {
     board->player = EMPTY_DISC;
+    return true;
   }
+
   return returned_value;
 }
 

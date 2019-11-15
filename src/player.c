@@ -4,17 +4,17 @@
 #define MAX_LENGTH_FILE_NAME 64
 #define INFINITY 32767
 
-/** HEURISTIC PART **/
+/******************************************************************************/
+/******************************* HEURISTIC PART *******************************/
+/******************************************************************************/
 
 /* return the difference of score between the current player and its opponent */
 static int score_heuristic(board_t *board, disc_t player) {
   score_t score = board_score(board);
   if (player == BLACK_DISC) {
     return score.black - score.white;
-  } else {
-    return score.white - score.black;
   }
-  return 0;
+  return score.white - score.black;
 }
 
 static int score_heuristic_bis(board_t *board, disc_t player) {
@@ -35,7 +35,7 @@ static int score_heuristic_bis(board_t *board, disc_t player) {
       tmp_move.row = tab_move[i];
       tmp_move.column = tab_move[j];
       if (board_get(board, tab_move[i], tab_move[i]) == player) {
-        int_score = int_score + 15;
+        int_score = int_score + 5;
       }
     }
   }
@@ -50,56 +50,26 @@ static int score_heuristic_bis(board_t *board, disc_t player) {
   return int_score;
 }
 
-/** AI TEST **/
-static size_t min_coor(size_t a, size_t b) {
-  if (a < b) {
-    return a;
-  }
-  return b;
-}
-
-move_t priority_borders(board_t *board) {
-  size_t nbr_poss_moves = board_count_player_moves(board);
-  size_t size = board_size(board);
-  size_t min = 0;
-  move_t best_move;
-  for (size_t i = 0; i < nbr_poss_moves; i++) {
-    move_t current_move = board_next_move(board);
-    move_t copy_current_move = current_move;
-    if (current_move.row >= size / 2) {
-      copy_current_move.row = size - current_move.row - 1;
-    }
-    if (current_move.column >= size / 2) {
-      copy_current_move.column = size - current_move.column - 1;
-    }
-    if (i == 0) {
-      best_move = current_move;
-      min = min_coor(copy_current_move.row, copy_current_move.column) + 1;
-    }
-    size_t current_min =
-        min_coor(copy_current_move.row, copy_current_move.column) + 1;
-    if (current_min <= min) {
-      best_move = current_move;
-      min = current_min;
-    }
-  }
-  return best_move;
-}
-
-/** SIMUL BEST PLAYER **/
+/******************************************************************************/
+/***************************** SIMUL BEST PLAYER ******************************/
+/******************************************************************************/
 
 move_t simul_best_player(board_t *board) {
   return simul_alpha_beta_player(board);
 }
 
-/** MINIMAX NEGAMAX ALPHA BETA PLAYER **/
+/******************************************************************************/
+/********************* MINIMAX NEGAMAX ALPHA BETA PLAYER **********************/
+/******************************************************************************/
 
 static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
                                   int beta, disc_t player) {
   disc_t current_player = board_player(board);
+  /* end of game or depth */
   if (current_player == EMPTY_DISC || depth == 0) {
     return score_heuristic_bis(board, player);
   }
+
   if (current_player == player) {
     size_t nbr_poss_moves = board_count_player_moves(board);
     for (size_t i = 0; i < nbr_poss_moves; i++) {
@@ -165,7 +135,9 @@ move_t simul_alpha_beta_bis_player(board_t *board) {
   return alpha_beta_bis_player(board, DEPTH_ALPHABETA_BIS);
 }
 
-/** MINIMAX ALPHA BETA PLAYER **/
+/******************************************************************************/
+/************************* MINIMAX ALPHA BETA PLAYER **************************/
+/******************************************************************************/
 
 static int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
                               disc_t player) {
@@ -237,7 +209,9 @@ move_t simul_alpha_beta_player(board_t *board) {
   return alpha_beta_player(board, DEPTH_ALPHABETA);
 }
 
-/** MINIMAX PLAYER PART **/
+/******************************************************************************/
+/**************************** MINIMAX PLAYER PART *****************************/
+/******************************************************************************/
 
 static int minimax_machine(board_t *board, size_t depth, disc_t player) {
   disc_t current_player = board_player(board);
@@ -303,7 +277,9 @@ move_t simul_minimax_player(board_t *board) {
   return minimax_player(board, DEPTH_MINIMAX);
 }
 
-/** RANDOM PLAYER PART **/
+/******************************************************************************/
+/***************************** RANDOM PLAYER PART *****************************/
+/******************************************************************************/
 
 static void rand_init(void) {
   static bool isinitialized = false;
@@ -324,7 +300,9 @@ move_t random_player(board_t *board) {
   return board_next_move(board);
 }
 
-/** GAME SAVE PART **/
+/******************************************************************************/
+/******************************* GAME SAVE PART *******************************/
+/******************************************************************************/
 
 static void clean_buffer() {
   int c = 0;
@@ -398,7 +376,9 @@ static void game_save(board_t *board) {
   free(file_name);
 }
 
-/** HUMAN PLAYER PART **/
+/******************************************************************************/
+/***************************** HUMAN PLAYER PART ******************************/
+/******************************************************************************/
 
 /* return size if char of column is incorrect */
 static size_t get_column(char current_char, size_t size) {

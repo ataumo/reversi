@@ -31,7 +31,7 @@ move_t simul_alpha_beta_player(board_t *board);
 #define DEPTH_ALPHABETA 4
 
 move_t simul_alpha_beta_bis_player(board_t *board);
-#define DEPTH_ALPHABETA_BIS 7
+#define DEPTH_ALPHABETA_BIS 3
 
 move_t priority_borders(board_t *board);
 
