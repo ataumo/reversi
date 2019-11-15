@@ -10,11 +10,13 @@ all: build
 build:
 	@cd src && $(MAKE)
 	@cd test && $(MAKE)
+	@cd test_player && $(MAKE)
 	@cp -f src/$(EXE) ./
 
 clean:
 	@cd src && $(MAKE) clean
 	@cd test && $(MAKE) clean
+	@cd test_player && $(MAKE) clean
 	@rm -f $(EXE)
 
 help:

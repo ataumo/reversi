@@ -19,15 +19,35 @@ static int score_heuristic(board_t *board, disc_t player) {
 
 static int score_heuristic_bis(board_t *board, disc_t player) {
   score_t score = board_score(board);
+  size_t size = board_size(board);
+  /* get score */
   int int_score = 0;
   if (player == BLACK_DISC) {
     int_score = score.black - score.white;
   } else {
     int_score = score.white - score.black;
   }
-  size_t nbr_poss_moves = board_count_player_moves(board);
-  size_t size = board_size(board);
-  return int_score - nbr_poss_moves;
+  /* put forward corner */
+  move_t tmp_move;
+  size_t tab_move[2] = {0, size - 1};
+  for (size_t i = 0; i < 2; i++) {
+    for (size_t j = 0; j < 2; j++) {
+      tmp_move.row = tab_move[i];
+      tmp_move.column = tab_move[j];
+      if (board_get(board, tab_move[i], tab_move[i]) == player) {
+        int_score = int_score + 15;
+      }
+    }
+  }
+  /*size_t possible_moves = board_count_player_moves(board);
+  size_t possible_moves_opponent = board_count_opponent_moves(board);
+  if (possible_moves < 5) {
+    int_score = int_score + 5;
+  }
+  if (possible_moves_opponent > 5) {
+    int_score = int_score + 10;
+  }*/
+  return int_score;
 }
 
 /** AI TEST **/
@@ -105,7 +125,7 @@ static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
       board_play(tmp_board, current_move);
       int score =
           alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
-      if (score <= beta) {
+      if (score < beta) {
         beta = score;
         if (alpha >= beta) {
           break;
@@ -132,7 +152,7 @@ static move_t alpha_beta_bis_player(board_t *board, size_t depth) {
     board_play(tmp_board, current_move);
     int score = alpha_beta_bis_machine(tmp_board, depth - 1, -INFINITY,
                                        INFINITY, current_player);
-    if (score > best_score) {
+    if (score >= best_score) {
       best_score = score;
       best_move = current_move;
     }

@@ -28,10 +28,10 @@ move_t simul_minimax_player(board_t *board);
 #define DEPTH_MINIMAX 1
 
 move_t simul_alpha_beta_player(board_t *board);
-#define DEPTH_ALPHABETA 3
+#define DEPTH_ALPHABETA 7
 
 move_t simul_alpha_beta_bis_player(board_t *board);
-#define DEPTH_ALPHABETA_BIS 3
+#define DEPTH_ALPHABETA_BIS 6
 
 move_t priority_borders(board_t *board);
 

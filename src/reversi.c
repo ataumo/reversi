@@ -13,12 +13,13 @@
 
 #define MAX_LENGTH 512
 /* define number of player functions and change array */
-#define NBR_PLAY_FUNC 4
+#define NBR_PLAY_FUNC 5
 static move_t (*play_func[NBR_PLAY_FUNC])(board_t *board) = {
-    human_player, random_player, simul_alpha_beta_player,
+    human_player, random_player, simul_minimax_player, simul_alpha_beta_player,
     simul_alpha_beta_bis_player};
 static char *name_play_func[NBR_PLAY_FUNC] = {
-    "human", "random", "alpha_beta_player", "alpha_beta_bis_player"};
+    "human", "random", "minimax_player", "alpha_beta_player",
+    "alpha_beta_bis_player"};
 
 static bool VERBOSE = false; /* verbose variable */
 
@@ -36,6 +37,10 @@ static char get_alpha_column(size_t row) {
 
 static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
                 board_t *board) {
+  /**/
+  int possible_moves_sum = 0;
+  int nbr_of_turn = 0;
+  /**/
   disc_t current_player = board_player(board); /* get current player */
   score_t score;
   size_t black_score;
@@ -68,6 +73,10 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   }
   /* main loop */
   while (current_player != EMPTY_DISC) {
+    /* Analyse part */
+    nbr_of_turn++;
+    possible_moves_sum += board_count_player_moves(board);
+    /****************/
     if (current_player == BLACK_DISC) {          /* turn of black player */
       if (board_count_player_moves(board) > 0) { /* player can play */
         move = black(board);                     /* get the move */
@@ -113,6 +122,10 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   score = board_score(board);
   black_score = score.black;
   white_score = score.white;
+  /* result of analyse */
+  fprintf(stdout, "the average of possibles moves %d, sum : %d, turn : %d\n",
+          possible_moves_sum / nbr_of_turn, possible_moves_sum, nbr_of_turn);
+  /**/
   if (black_score > white_score) {
     fprintf(stdout, "Player 'X' win the game.\n");
     return 1;
