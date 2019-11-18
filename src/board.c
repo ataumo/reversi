@@ -311,31 +311,32 @@ bool board_play(board_t *board, const move_t move) {
     } else { /* invalid move */
       returned_value = false;
     }
-    board->moves = compute_moves(size, board->white, board->black);
-    board->player = WHITE_DISC; /* alternate in all cases */
-  } else {                      /* WHITE_DISC player plays */
-    /* if move is valid an player can plays */
-    if (board_count_player_moves(board) != 0 &&
-        board_is_move_valid(board, move)) {
-      bitboard_t trace =
-          trace_move(board, move); /* get the trace of direction */
-      board->black &= ~trace;
-      board->white |= trace;
-    } else { /* invalid move */
-      returned_value = false;
-    }
-    board->moves = compute_moves(size, board->black, board->white);
-    board->player = BLACK_DISC; /* alternate in all cases */
   }
-  board->next_move = board->moves;
-  /* if black and white players can't play after playing */
-  if (board_count_opponent_moves(board) == 0 &&
-      board_count_player_moves(board) == 0) {
-    board->player = EMPTY_DISC;
-    return true;
+  board->moves = compute_moves(size, board->white, board->black);
+  board->player = WHITE_DISC; /* alternate in all cases */
+}
+else { /* WHITE_DISC player plays */
+  /* if move is valid an player can plays */
+  if (board_count_player_moves(board) != 0 &&
+      board_is_move_valid(board, move)) {
+    bitboard_t trace = trace_move(board, move); /* get the trace of direction */
+    board->black &= ~trace;
+    board->white |= trace;
+  } else { /* invalid move */
+    returned_value = false;
   }
+  board->moves = compute_moves(size, board->black, board->white);
+  board->player = BLACK_DISC; /* alternate in all cases */
+}
+board->next_move = board->moves;
+/* if black and white players can't play after playing */
+if (board_count_opponent_moves(board) == 0 &&
+    board_count_player_moves(board) == 0) {
+  board->player = EMPTY_DISC;
+  return true;
+}
 
-  return returned_value;
+return returned_value;
 }
 
 move_t board_next_move(board_t *board) {

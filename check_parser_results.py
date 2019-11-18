@@ -33,21 +33,24 @@ def test_game_time(n,depth):
     ticks = time.time()
     L=[]
     nbr_win = 0
-    nbr_win_o=0
+    nbr_win_o = 0
     nbr_draw = 0
+    nbr_time_echec = 0
     nbr_test = n
     p=0
     for i in range(nbr_test):
         current_time = time.time()
-        process = subprocess.Popen(["./reversi","-s4","-b4","-w1"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(["./reversi","-s4","-b1","-w1"], stdout=subprocess.PIPE)
         stdout = process.communicate()[0]
         if "Player 'X' win the game." in 'STDOUT:{}'.format(stdout):
             nbr_win=nbr_win+1
-        if "Player 'O' win the game." in 'STDOUT:{}'.format(stdout):
+        elif "Player 'O' win the game." in 'STDOUT:{}'.format(stdout):
             nbr_win_o=nbr_win_o+1
         elif "Draw" in 'STDOUT:{}'.format(stdout):
             nbr_draw=nbr_draw+1
-        np=(i*100)//nbr_test
+        elif "echec time" in 'STDOUT:{}'.format(stdout):
+            nbr_time_echec=nbr_time_echec+1
+        np=(i*80)//nbr_test #print 80 character
         if np>p:
             print("%", sep=' ', end='', flush=True)
             p=np
@@ -58,6 +61,7 @@ def test_game_time(n,depth):
     print(nbr_win*100/nbr_test,"% of success for X")
     print(nbr_win_o*100/nbr_test,"% of success for O")
     print(nbr_draw*100/nbr_test, "% of draw game")
+    print(nbr_time_echec, " of time echec")
     print(time.time()-ticks,"seconde")
 
 def check_test():
@@ -82,4 +86,4 @@ def check_test():
         print(result.returncode)
 
 #check_test()
-test_game_time(500,3)
+test_game_time(1000,3)

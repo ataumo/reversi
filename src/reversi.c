@@ -71,6 +71,13 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   if (!VERBOSE) {
     fprintf(stdout, "\nPlaying...\n");
   }
+
+  /* time managment */
+  clock_t t;
+  double time_taken;
+  size_t max_time = 25;
+  /******************/
+
   /* main loop */
   while (current_player != EMPTY_DISC) {
     /* Analyse part */
@@ -79,7 +86,20 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
     /****************/
     if (current_player == BLACK_DISC) {          /* turn of black player */
       if (board_count_player_moves(board) > 0) { /* player can play */
-        move = black(board);                     /* get the move */
+        /* time */
+        t = clock();
+
+        move = black(board); /* get the move */
+
+        /* time managment */
+        time_taken = ((double)(clock() - t)) / CLOCKS_PER_SEC; // in seconds
+        if (time_taken > max_time) {
+          board_set_player(board, EMPTY_DISC); /*end of game*/
+          fprintf(stdout, "echec time\n");
+          return 0;
+        }
+        /******************/
+
         if (black == human_player) {
           if (move.row == size && move.column == size) {
             fprintf(stdout, "Player 'X' resigned. player 'O' win the game.\n");
@@ -97,7 +117,21 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
     }
     if (current_player == WHITE_DISC) { /* turn of white player */
       if (board_count_player_moves(board) > 0) {
+
+        /* time */
+        t = clock();
+
         move = white(board); /* get the move */
+
+        /* time managment */
+        time_taken = ((double)(clock() - t)) / CLOCKS_PER_SEC; // in seconds
+        if (time_taken > max_time) {
+          board_set_player(board, EMPTY_DISC); /*end of game*/
+          fprintf(stdout, "echec time\n");
+          return 0;
+        }
+        /******************/
+
         if (white == human_player) {
           if (move.row == size && move.column == size) {
             fprintf(stdout, "Player 'O' resigned. player 'X' win the game.\n");
@@ -123,8 +157,10 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   black_score = score.black;
   white_score = score.white;
   /* result of analyse */
-  fprintf(stdout, "the average of possibles moves %d, sum : %d, turn : %d\n",
-          possible_moves_sum / nbr_of_turn, possible_moves_sum, nbr_of_turn);
+  if (board_size(board) > 2) {
+    fprintf(stdout, "the average of possibles moves %d, sum : %d, turn : %d\n",
+            possible_moves_sum / nbr_of_turn, possible_moves_sum, nbr_of_turn);
+  }
   /**/
   if (black_score > white_score) {
     fprintf(stdout, "Player 'X' win the game.\n");
@@ -413,7 +449,9 @@ int main(int argc, char *argv[]) {
       if (contest_mode) { /* contest mode is enable */
         /******************* contest mode **********************/
         board_t *board = file_parser(file_name); /* read in contest file */
-        game(blackfunc, whitefunc, board);
+        move_t best_move = simul_alpha_beta_bis_player(board);
+        fprintf(stdout, "%c%d\n", get_alpha_column(best_move.column),
+                (best_move.row) + 1);
         board_free(board);
       } else { /* normal mode */
         /******************* normal mode with file **********************/

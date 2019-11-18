@@ -3,6 +3,7 @@
 /* define size of file_name string but it can be longer than 64 */
 #define MAX_LENGTH_FILE_NAME 64
 #define INFINITY 32767
+disc_t last_player = EMPTY_DISC;
 
 /******************************************************************************/
 /******************************* HEURISTIC PART *******************************/
@@ -20,33 +21,66 @@ static int score_heuristic(board_t *board, disc_t player) {
 static int score_heuristic_bis(board_t *board, disc_t player) {
   score_t score = board_score(board);
   size_t size = board_size(board);
-  /* get score */
   int int_score = 0;
+  disc_t opponent;
+
+  /* get score */
   if (player == BLACK_DISC) {
     int_score = score.black - score.white;
+    opponent = WHITE_DISC;
   } else {
     int_score = score.white - score.black;
+    opponent = BLACK_DISC;
   }
-  /* put forward corner */
+  /* corners managment */
   move_t tmp_move;
   size_t tab_move[2] = {0, size - 1};
   for (size_t i = 0; i < 2; i++) {
     for (size_t j = 0; j < 2; j++) {
       tmp_move.row = tab_move[i];
       tmp_move.column = tab_move[j];
-      if (board_get(board, tab_move[i], tab_move[i]) == player) {
+      /* already play in corner */
+      disc_t corner_value = board_get(board, tab_move[i], tab_move[i]);
+      if (corner_value == player) {
         int_score = int_score + 5;
+      } else if (corner_value == opponent) {
+        int_score = int_score - 5;
       }
     }
   }
-  /*size_t possible_moves = board_count_player_moves(board);
-  size_t possible_moves_opponent = board_count_opponent_moves(board);
-  if (possible_moves < 5) {
-    int_score = int_score + 5;
+
+  /* neighbours corners managment */
+  /* reduce the score if neighbours of corner was played */
+  if ((board_get(board, 0, 1) == player) ||
+      (board_get(board, 1, 0) == player) ||
+      (board_get(board, 1, 1) == player) ||
+      (board_get(board, 0, size - 2) == player) ||
+      (board_get(board, 1, size - 2) == player) ||
+      (board_get(board, 1, size - 1) == player) ||
+      (board_get(board, size - 2, 0) == player) ||
+      (board_get(board, size - 2, 1) == player) ||
+      (board_get(board, size - 1, 1) == player) ||
+      (board_get(board, size - 1, size - 2) == player) ||
+      (board_get(board, size - 2, size - 2) == player) ||
+      (board_get(board, size - 2, size - 1) == player)) {
+    int_score = int_score - 20;
   }
-  if (possible_moves_opponent > 5) {
-    int_score = int_score + 10;
-  }*/
+
+  /* number of possibles moves managment */
+  // size_t possible_moves = board_count_player_moves(board);
+  // int_score = int_score + (size_t)(3.1 * possible_moves);
+  // size_t possible_moves_opponent = board_count_opponent_moves(board);
+  // int_score = int_score - (size_t)(2.1 * possible_moves_opponent);
+
+  /* last player managment (parity) */
+  if (board_player(board) == EMPTY_DISC) { /* end of game */
+    if (last_player == player) {
+      int_score = int_score + 5;
+    } else if (last_player == opponent) {
+      int_score = int_score - 5;
+    }
+  }
+
   return int_score;
 }
 
@@ -69,6 +103,8 @@ static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
   if (current_player == EMPTY_DISC || depth == 0) {
     return score_heuristic_bis(board, player);
   }
+
+  last_player = current_player;
 
   if (current_player == player) {
     size_t nbr_poss_moves = board_count_player_moves(board);
@@ -113,7 +149,6 @@ static move_t alpha_beta_bis_player(board_t *board, size_t depth) {
   move_t best_move;
   size_t nbr_poss_moves = board_count_player_moves(board);
   for (size_t i = 0; i < nbr_poss_moves; i++) {
-
     board_t *tmp_board = board_copy(board);
     move_t current_move = board_next_move(board);
     if (i == 0) {
@@ -145,7 +180,6 @@ static int alpha_beta_machine(board_t *board, size_t depth, int alpha, int beta,
   if (current_player == EMPTY_DISC || depth == 0) {
     return score_heuristic(board, player);
   }
-  int best_score;
   if (current_player == player) {
     size_t nbr_poss_moves = board_count_player_moves(board);
     for (size_t i = 0; i < nbr_poss_moves; i++) {
@@ -445,7 +479,7 @@ move_t human_player(board_t *board) {
       move.column = size;
       return move;
     }
-    if (move.row == size) { /* row or colum is invalid */
+    if (move.row == size) { /* row or column is invalid */
       error_case = true;
     } else {
       if (move.row >= size) {
