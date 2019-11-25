@@ -358,7 +358,8 @@ move_t board_next_move(board_t *board) {
   }
   size_t size = board->size;                     /* get the size of board */
   bitboard_t possibles_moves = board->next_move; /* get possibles moves */
-  /* number of tail zeros */
+                                                 /* number of tail zeros */
+
   nbr_tz = bitboard_popcount((possibles_moves - 1) ^ possibles_moves) - 1;
 
   board->next_move &= possibles_moves - 1; /* remove the position */

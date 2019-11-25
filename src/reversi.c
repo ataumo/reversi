@@ -423,7 +423,7 @@ int main(int argc, char *argv[]) {
       if (contest_mode) { /* contest mode is enable */
         /******************* contest mode **********************/
         board_t *board = file_parser(file_name); /* read in contest file */
-        move_t best_move = simul_alpha_beta_bis_player(board);
+        move_t best_move = simul_fail_soft_player(board);
         fprintf(stdout, "%c%zu\n", get_alpha_column(best_move.column),
                 (best_move.row) + 1);
         board_free(board);

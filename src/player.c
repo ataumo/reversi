@@ -13,7 +13,7 @@ static disc_t last_player = EMPTY_DISC;
 /* variable timer */
 static clock_t start_time;
 static double time_taken;
-static size_t max_time = 25;
+static size_t max_time = 28;
 /******************/
 /* init start time */
 static void init_time() { start_time = clock(); }
@@ -129,7 +129,14 @@ static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
       board_t *tmp_board = board_copy(board);
       move_t current_move = board_next_move(board);
       board_play(tmp_board, current_move);
-      int score = fail_soft_machine(tmp_board, depth - 1, alpha, beta, player);
+      /* time managment */
+      int score;
+      if (check_time_out()) {
+        score = fail_soft_machine(tmp_board, 0, alpha, beta, player);
+      } else {
+        score = fail_soft_machine(tmp_board, depth - 1, alpha, beta, player);
+      }
+      /******************/
       board_free(tmp_board);
       if (score >= current) {
         current = score;
@@ -148,7 +155,14 @@ static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
       board_t *tmp_board = board_copy(board);
       move_t current_move = board_next_move(board);
       board_play(tmp_board, current_move);
-      int score = fail_soft_machine(tmp_board, depth - 1, alpha, beta, player);
+      /* time managment */
+      int score;
+      if (check_time_out()) {
+        score = fail_soft_machine(tmp_board, 0, alpha, beta, player);
+      } else {
+        score = fail_soft_machine(tmp_board, depth - 1, alpha, beta, player);
+      }
+      /******************/
       board_free(tmp_board);
       if (score <= beta) {
         beta = score;
@@ -190,7 +204,7 @@ move_t simul_fail_soft_player(board_t *board) {
 }
 
 /******************************************************************************/
-/********************* MINIMAX NEGAMAX ALPHA BETA PLAYER **********************/
+/***************************** ALPHA BETA PLAYER ******************************/
 /******************************************************************************/
 
 static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
