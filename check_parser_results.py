@@ -11,7 +11,7 @@ def stock_data(l,depth):
         #if l[i]!=0:
         char=str(depth)+' '+str(l[i])
         L+=[char]
-    fcible=open('alpha_beta.txt','a')
+    fcible=open('alphabeta.txt','a')
     print("ecriture dans le fichier..")
     fcible.write('\n'.join(L))
     fcible.close()
@@ -40,7 +40,7 @@ def test_game_time(n,depth):
     p=0
     for i in range(nbr_test):
         current_time = time.time()
-        process = subprocess.Popen(["./reversi","-s4","-b1","-w1"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(["./reversi","-s4","-b5","-w1"], stdout=subprocess.PIPE)
         stdout = process.communicate()[0]
         if "Player 'X' win the game." in 'STDOUT:{}'.format(stdout):
             nbr_win=nbr_win+1
@@ -86,4 +86,4 @@ def check_test():
         print(result.returncode)
 
 #check_test()
-test_game_time(1000,3)
+test_game_time(1000,5)

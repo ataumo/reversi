@@ -24,15 +24,20 @@ move_t random_player(board_t *board);
 
 move_t simul_best_player(board_t *board);
 
+/* minimax algorithm with naive heuristic */
 move_t simul_minimax_player(board_t *board);
-#define DEPTH_MINIMAX 1
+#define DEPTH_MINIMAX 6
 
+/* alpha beta algorithm with naive heuristic */
 move_t simul_alpha_beta_player(board_t *board);
-#define DEPTH_ALPHABETA 4
+#define DEPTH_ALPHABETA 6
 
+/* alpha beta algorithm with clever heuristic */
 move_t simul_alpha_beta_bis_player(board_t *board);
-#define DEPTH_ALPHABETA_BIS 8
+#define DEPTH_ALPHABETA_BIS 3
 
-move_t priority_borders(board_t *board);
+/* alpha beta fail soft algorithm with clever heuristic */
+move_t simul_fail_soft_player(board_t *board);
+#define DEPTH_FAILSOFT 5
 
 #endif /* PLAYER_H */

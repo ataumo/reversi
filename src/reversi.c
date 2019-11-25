@@ -1,7 +1,3 @@
-#include "reversi.h"
-#include "board.h"
-#include "player.h"
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,17 +7,29 @@
 #include <getopt.h>
 #include <string.h>
 
-#define MAX_LENGTH 512
-/* define number of player functions and change array */
-#define NBR_PLAY_FUNC 5
-static move_t (*play_func[NBR_PLAY_FUNC])(board_t *board) = {
-    human_player, random_player, simul_minimax_player, simul_alpha_beta_player,
-    simul_alpha_beta_bis_player};
-static char *name_play_func[NBR_PLAY_FUNC] = {
-    "human", "random", "minimax_player", "alpha_beta_player",
-    "alpha_beta_bis_player"};
+#include "board.h"
+#include "player.h"
+#include "reversi.h"
 
-static bool VERBOSE = false; /* verbose variable */
+#define MAX_LENGTH 512
+
+/* define number of player functions and change array */
+#define NBR_PLAY_FUNC 6
+static move_t (*play_func[NBR_PLAY_FUNC])(board_t *board) = {
+    human_player,
+    random_player,
+    simul_minimax_player,
+    simul_alpha_beta_player,
+    simul_alpha_beta_bis_player,
+    simul_fail_soft_player};
+static char *name_play_func[NBR_PLAY_FUNC] = {"human",
+                                              "random",
+                                              "minimax_player",
+                                              "alpha_beta_player",
+                                              "alpha_beta_bis_player",
+                                              "fail_soft_player"};
+
+static bool global_verbose = false; /* verbose variable */
 
 /* use for keep disc player in file parser */
 typedef struct {
@@ -30,10 +38,7 @@ typedef struct {
   int y;
 } coor_disc;
 
-static char get_alpha_column(size_t row) {
-  int alpha_maj[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
-  return alpha_maj[row];
-}
+static char get_alpha_column(size_t row) { return (char)(row + 'A'); }
 
 static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
                 board_t *board) {
@@ -68,16 +73,9 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
           "%s player start !\n",
           black_player_type, white_player_type, first_player);
 
-  if (!VERBOSE) {
+  if (!global_verbose) {
     fprintf(stdout, "\nPlaying...\n");
   }
-
-  /* time managment */
-  clock_t t;
-  double time_taken;
-  size_t max_time = 25;
-  /******************/
-
   /* main loop */
   while (current_player != EMPTY_DISC) {
     /* Analyse part */
@@ -86,27 +84,14 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
     /****************/
     if (current_player == BLACK_DISC) {          /* turn of black player */
       if (board_count_player_moves(board) > 0) { /* player can play */
-        /* time */
-        t = clock();
-
-        move = black(board); /* get the move */
-
-        /* time managment */
-        time_taken = ((double)(clock() - t)) / CLOCKS_PER_SEC; // in seconds
-        if (time_taken > max_time) {
-          board_set_player(board, EMPTY_DISC); /*end of game*/
-          fprintf(stdout, "echec time\n");
-          return 0;
-        }
-        /******************/
-
+        move = black(board);                     /* get the move */
         if (black == human_player) {
           if (move.row == size && move.column == size) {
             fprintf(stdout, "Player 'X' resigned. player 'O' win the game.\n");
             return -1;
           }
-        } else {         /* if random player or others */
-          if (VERBOSE) { /* if verbose option is activated */
+        } else {                /* if random player or others */
+          if (global_verbose) { /* if verbose option is activated */
             board_print(board, stdout);
             fprintf(stdout, "'X' plays %c%zu\n", get_alpha_column(move.column),
                     (move.row + 1));
@@ -117,28 +102,14 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
     }
     if (current_player == WHITE_DISC) { /* turn of white player */
       if (board_count_player_moves(board) > 0) {
-
-        /* time */
-        t = clock();
-
         move = white(board); /* get the move */
-
-        /* time managment */
-        time_taken = ((double)(clock() - t)) / CLOCKS_PER_SEC; // in seconds
-        if (time_taken > max_time) {
-          board_set_player(board, EMPTY_DISC); /*end of game*/
-          fprintf(stdout, "echec time\n");
-          return 0;
-        }
-        /******************/
-
         if (white == human_player) {
           if (move.row == size && move.column == size) {
             fprintf(stdout, "Player 'O' resigned. player 'X' win the game.\n");
             return -2;
           }
-        } else {         /* if random player or others */
-          if (VERBOSE) { /* if verbose option is activated */
+        } else {                /* if random player or others */
+          if (global_verbose) { /* if verbose option is activated */
             board_print(board, stdout);
             fprintf(stdout, "'O' plays %c%zu\n", get_alpha_column(move.column),
                     move.row + 1);
@@ -147,7 +118,7 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
       }
       board_play(board, move); /* play in all cases */
     }
-    if (VERBOSE) {
+    if (global_verbose) {
       fprintf(stdout, "==========================================\n");
     }
     current_player = board_player(board);
@@ -305,6 +276,9 @@ static board_t *file_parser(const char *filename) {
   fclose(file);
   size_t size = size_raw;
   board_t *newboard = board_alloc(size, player);
+  if (newboard == NULL) {
+    errx(1, "error of board malloc");
+  }
   /* set value of board */
   for (size_t i = 0; i < nbr_of_disc; i++) {
     board_set(newboard, tab_disc[i].player, tab_disc[i].y, tab_disc[i].x);
@@ -322,7 +296,8 @@ static void print_usage() {
          "  -V, --version         display version and exit\n"
          "  -h, --help            display this help and exit\n"
          "\n"
-         "Tactic list: human (0), random (1)\n");
+         "Tactic list: human (0), random (1), minimax (2), alpha beta (3), "
+         "best player (4)\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -401,7 +376,7 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'v': /* 'verbose' option */
-      VERBOSE = true;
+      global_verbose = true;
       break;
 
     case 'V':               /* 'version' option */
@@ -444,13 +419,12 @@ int main(int argc, char *argv[]) {
       file = fopen(file_name, "r+");
       if (file == NULL) { /* The given argument is not a readable file */
         err(errno, "%s", file_name);
-        exit(EXIT_FAILURE);
       }
       if (contest_mode) { /* contest mode is enable */
         /******************* contest mode **********************/
         board_t *board = file_parser(file_name); /* read in contest file */
         move_t best_move = simul_alpha_beta_bis_player(board);
-        fprintf(stdout, "%c%d\n", get_alpha_column(best_move.column),
+        fprintf(stdout, "%c%zu\n", get_alpha_column(best_move.column),
                 (best_move.row) + 1);
         board_free(board);
       } else { /* normal mode */
@@ -466,6 +440,9 @@ int main(int argc, char *argv[]) {
       }
       /******************* normal mode without file **********************/
       board_t *board = board_init(board_size_num * 2);
+      if (board == NULL) {
+        errx(1, "Error of board init");
+      }
       game(blackfunc, whitefunc, board);
       board_free(board);
     }

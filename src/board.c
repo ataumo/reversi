@@ -5,6 +5,9 @@
 #include <string.h>
 #include <time.h>
 
+/* Base bitboard type */
+typedef unsigned __int128 bitboard_t;
+
 /* Internal board_t structure (hidden from the outside) */
 struct board_t {
   size_t size;
@@ -116,7 +119,6 @@ static bitboard_t compute_moves(const size_t size, const bitboard_t player,
 board_t *board_alloc(const size_t size, const disc_t player) {
   board_t *board = malloc(sizeof(board_t));
   if (board == NULL) {
-    fprintf(stderr, "board.c:board_alloc(): error: error of malloc board\n");
     return NULL;
   }
   board->size = size;
@@ -137,10 +139,12 @@ void board_free(board_t *board) {
 board_t *board_init(const size_t size) {
   /* verification of size */
   if (size % 2 != 0 || size < MIN_BOARD_SIZE || size > MAX_BOARD_SIZE) {
-    fprintf(stderr, "board.c:board_init(): error: error of size (%zu)\n", size);
     return NULL;
   }
   board_t *board = board_alloc(size, BLACK_DISC); /* creat a new void board */
+  if (board == NULL) {
+    return NULL;
+  }
   /* set white disc on the board */
   board->white = set_bitboard(size, (size / 2) - 1, (size / 2) - 1) |
                  set_bitboard(size, size / 2, size / 2);
@@ -162,6 +166,9 @@ board_t *board_copy(const board_t *board) {
   size_t size_copy = board->size;     /* get size */
   disc_t player_copy = board->player; /* get player */
   board_t *board_copy = board_alloc(size_copy, player_copy);
+  if (board_copy == NULL) {
+    return NULL;
+  }
   board_copy->black = board->black;
   board_copy->white = board->white;
   board_copy->moves = board->moves;
@@ -176,9 +183,6 @@ disc_t board_player(const board_t *board) { return board->player; }
 void board_set_player(board_t *board, disc_t new_player) {
   if (new_player != HINT_DISC) {
     board->player = new_player;
-  } else {
-    fprintf(stderr, "board.c:board_set_player(): error: you try to set player "
-                    "with EMPTY_DISC\n");
   }
 }
 
@@ -354,12 +358,9 @@ move_t board_next_move(board_t *board) {
   }
   size_t size = board->size;                     /* get the size of board */
   bitboard_t possibles_moves = board->next_move; /* get possibles moves */
-  if (size < 10) {
-    /* if possible_moves is a 64bit number */
-    nbr_tz = __builtin_ctzll(possibles_moves);
-  } else {
-    nbr_tz = bitboard_popcount((possibles_moves - 1) ^ possibles_moves) - 1;
-  }
+  /* number of tail zeros */
+  nbr_tz = bitboard_popcount((possibles_moves - 1) ^ possibles_moves) - 1;
+
   board->next_move &= possibles_moves - 1; /* remove the position */
   move.row = nbr_tz / size;                /* compute row */
   move.column = nbr_tz % size;             /* compute column */

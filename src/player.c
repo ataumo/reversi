@@ -2,8 +2,30 @@
 
 /* define size of file_name string but it can be longer than 64 */
 #define MAX_LENGTH_FILE_NAME 64
-#define INFINITY 32767
-disc_t last_player = EMPTY_DISC;
+#define INFINITY 32767 /* borne of integer */
+
+static disc_t last_player = EMPTY_DISC;
+
+/******************************************************************************/
+/********************************* TIME PART **********************************/
+/******************************************************************************/
+
+/* variable timer */
+static clock_t start_time;
+static double time_taken;
+static size_t max_time = 25;
+/******************/
+/* init start time */
+static void init_time() { start_time = clock(); }
+
+/* return true if time's up */
+static bool check_time_out() {
+  time_taken = ((double)(clock() - start_time)) / CLOCKS_PER_SEC; // in seconds
+  if (time_taken > max_time) {
+    return true;
+  }
+  return false;
+}
 
 /******************************************************************************/
 /******************************* HEURISTIC PART *******************************/
@@ -18,13 +40,14 @@ static int score_heuristic(board_t *board, disc_t player) {
   return score.white - score.black;
 }
 
+/* return */
 static int score_heuristic_bis(board_t *board, disc_t player) {
   score_t score = board_score(board);
   size_t size = board_size(board);
   int int_score = 0;
   disc_t opponent;
 
-  /* get score */
+  /** score managment **/
   if (player == BLACK_DISC) {
     int_score = score.black - score.white;
     opponent = WHITE_DISC;
@@ -32,7 +55,9 @@ static int score_heuristic_bis(board_t *board, disc_t player) {
     int_score = score.white - score.black;
     opponent = BLACK_DISC;
   }
-  /* corners managment */
+  /** corners managment **/
+  /* if a move has already been played in a corner of board, it can increase the
+   * final score */
   move_t tmp_move;
   size_t tab_move[2] = {0, size - 1};
   for (size_t i = 0; i < 2; i++) {
@@ -66,14 +91,9 @@ static int score_heuristic_bis(board_t *board, disc_t player) {
     int_score = int_score - 20;
   }
 
-  /* number of possibles moves managment */
-  // size_t possible_moves = board_count_player_moves(board);
-  // int_score = int_score + (size_t)(3.1 * possible_moves);
-  // size_t possible_moves_opponent = board_count_opponent_moves(board);
-  // int_score = int_score - (size_t)(2.1 * possible_moves_opponent);
-
   /* last player managment (parity) */
-  if (board_player(board) == EMPTY_DISC) { /* end of game */
+  /* end of game */
+  if (board_player(board) == EMPTY_DISC) {
     if (last_player == player) {
       int_score = int_score + 5;
     } else if (last_player == opponent) {
@@ -90,6 +110,83 @@ static int score_heuristic_bis(board_t *board, disc_t player) {
 
 move_t simul_best_player(board_t *board) {
   return simul_alpha_beta_player(board);
+}
+
+/******************************************************************************/
+/************************ FAIL SOFT ALPHA BETA PLAYER *************************/
+/******************************************************************************/
+
+static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
+                             disc_t player) {
+  disc_t current_player = board_player(board);
+  int current = -INFINITY;
+  if (current_player == EMPTY_DISC || depth == 0) {
+    return score_heuristic_bis(board, player);
+  }
+  if (current_player == player) {
+    size_t nbr_poss_moves = board_count_player_moves(board);
+    for (size_t i = 0; i < nbr_poss_moves; i++) {
+      board_t *tmp_board = board_copy(board);
+      move_t current_move = board_next_move(board);
+      board_play(tmp_board, current_move);
+      int score = fail_soft_machine(tmp_board, depth - 1, alpha, beta, player);
+      board_free(tmp_board);
+      if (score >= current) {
+        current = score;
+        if (score >= alpha) {
+          alpha = score;
+          if (alpha >= beta) {
+            break;
+          }
+        }
+      }
+    }
+    return current;
+  } else {
+    size_t nbr_poss_moves = board_count_player_moves(board);
+    for (size_t i = 0; i < nbr_poss_moves; i++) {
+      board_t *tmp_board = board_copy(board);
+      move_t current_move = board_next_move(board);
+      board_play(tmp_board, current_move);
+      int score = fail_soft_machine(tmp_board, depth - 1, alpha, beta, player);
+      board_free(tmp_board);
+      if (score <= beta) {
+        beta = score;
+        if (alpha >= beta) {
+          break;
+        }
+      }
+    }
+    return beta;
+  }
+}
+
+static move_t fail_soft_player(board_t *board, size_t depth) {
+  disc_t current_player = board_player(board);
+  int best_score = -INFINITY;
+  move_t best_move;
+  size_t nbr_poss_moves = board_count_player_moves(board);
+  for (size_t i = 0; i < nbr_poss_moves; i++) {
+
+    board_t *tmp_board = board_copy(board);
+    move_t current_move = board_next_move(board);
+    if (i == 0) {
+      best_move = current_move;
+    }
+    board_play(tmp_board, current_move);
+    int score = fail_soft_machine(tmp_board, depth - 1, -INFINITY, INFINITY,
+                                  current_player);
+    board_free(tmp_board);
+    if (score > best_score) {
+      best_score = score;
+      best_move = current_move;
+    }
+  }
+  return best_move;
+}
+
+move_t simul_fail_soft_player(board_t *board) {
+  return fail_soft_player(board, DEPTH_FAILSOFT);
 }
 
 /******************************************************************************/
@@ -112,8 +209,15 @@ static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
       board_t *tmp_board = board_copy(board);
       move_t current_move = board_next_move(board);
       board_play(tmp_board, current_move);
-      int score =
-          alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
+      /* time managment */
+      int score;
+      if (check_time_out()) {
+        score = alpha_beta_bis_machine(tmp_board, 0, alpha, beta, player);
+      } else {
+        score =
+            alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
+      }
+      /******************/
       board_free(tmp_board);
       if (score > alpha) {
         alpha = score;
@@ -129,8 +233,15 @@ static int alpha_beta_bis_machine(board_t *board, size_t depth, int alpha,
       board_t *tmp_board = board_copy(board);
       move_t current_move = board_next_move(board);
       board_play(tmp_board, current_move);
-      int score =
-          alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
+      /* time managment */
+      int score;
+      if (check_time_out()) {
+        score = alpha_beta_bis_machine(tmp_board, 0, alpha, beta, player);
+      } else {
+        score =
+            alpha_beta_bis_machine(tmp_board, depth - 1, alpha, beta, player);
+      }
+      /******************/
       board_free(tmp_board);
       if (score < beta) {
         beta = score;
@@ -148,6 +259,9 @@ static move_t alpha_beta_bis_player(board_t *board, size_t depth) {
   int best_score = -INFINITY;
   move_t best_move;
   size_t nbr_poss_moves = board_count_player_moves(board);
+  /* init of timer */
+  init_time();
+  /*****************/
   for (size_t i = 0; i < nbr_poss_moves; i++) {
     board_t *tmp_board = board_copy(board);
     move_t current_move = board_next_move(board);
@@ -318,7 +432,7 @@ move_t simul_minimax_player(board_t *board) {
 static void rand_init(void) {
   static bool isinitialized = false;
   if (!isinitialized) {
-    srandom(time(NULL) - getpid());
+    srandom(time(NULL) - getpid() + clock());
     isinitialized = true;
   }
 }
@@ -479,22 +593,23 @@ move_t human_player(board_t *board) {
       move.column = size;
       return move;
     }
-    if (move.row == size) { /* row or column is invalid */
+
+    if (move.row >= size) {
       error_case = true;
+      fprintf(stdout, "Row out of bounds. ");
     } else {
-      if (move.row >= size) {
-        error_case = true;
-        fprintf(stdout, "Row out of bounds. ");
-      } else {
+      error_case = false;
+    }
+    if (move.column >= size) {
+      error_case = true;
+      fprintf(stdout, "Column out of bounds. ");
+    } else {
+      if (!error_case) { /* if error case is not already true */
         error_case = false;
       }
-      if (move.column >= size) {
-        error_case = true;
-        fprintf(stdout, "Column out of bounds. ");
-      } else {
-        error_case = false;
-      }
-      if (!error_case && !board_is_move_valid(board, move)) {
+    }
+    if (!error_case) {
+      if (!board_is_move_valid(board, move)) {
         error_case = true;
         fprintf(stdout, "This move is invalid. ");
       } else {

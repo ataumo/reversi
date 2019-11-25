@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Reversi board (forwards declaration to hide the implementation) */
+typedef struct board_t board_t;
+
 /* Min/Max with board */
 #define MIN_BOARD_SIZE 2
 #define MAX_BOARD_SIZE 10
@@ -50,11 +53,6 @@ typedef struct {
   unsigned short black;
   unsigned short white;
 } score_t;
-
-/* Reversi board (forwards declaration to hide the implementation) */
-typedef struct board_t board_t;
-/* Base bitboard type */
-typedef unsigned __int128 bitboard_t;
 
 /** board_t type **/
 /* allocate memory needed to creat a board of size 'size'
