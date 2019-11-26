@@ -424,8 +424,11 @@ int main(int argc, char *argv[]) {
         /******************* contest mode **********************/
         board_t *board = file_parser(file_name); /* read in contest file */
         move_t best_move = simul_fail_soft_player(board);
-        fprintf(stdout, "%c%zu\n", get_alpha_column(best_move.column),
-                (best_move.row) + 1);
+        size_t size = board_size(board);
+        if (best_move.row != size) {
+          fprintf(stdout, "%c%zu\n", get_alpha_column(best_move.column),
+                  (best_move.row) + 1);
+        }
         board_free(board);
       } else { /* normal mode */
         /******************* normal mode with file **********************/

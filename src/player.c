@@ -178,7 +178,8 @@ static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
 static move_t fail_soft_player(board_t *board, size_t depth) {
   disc_t current_player = board_player(board);
   int best_score = -INFINITY;
-  move_t best_move;
+  size_t size = board_size(board);
+  move_t best_move = (move_t){size, size};
   size_t nbr_poss_moves = board_count_player_moves(board);
   for (size_t i = 0; i < nbr_poss_moves; i++) {
 
