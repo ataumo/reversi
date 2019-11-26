@@ -568,23 +568,23 @@ Vient ensuite la partie permettant de récupérer le ou les caractères définis
 Pour résumer, cette fonction renverra les coups \texttt{size,*} et/ou \texttt{*,size} si l'un des caractères ou l'une des positions sont incorrects et \texttt{size+1,size+1} si le caractère rencontré est q.
 
 \paragraph{\texttt{- human\_player() }}
-Nous pouvons maintenant nous intéresser a la fonction principale.
+Nous pouvons maintenant nous intéresser à la fonction principale.
 
 
-Pour permettre la gestion de la répétition d'un coup, nous allons utiliser une boucle while et une variable bolléenne \texttt{error\_case} initialisé à vrai. Cette variable redevient vrai dans les cas ou il est necessaire de redemander le coup, et faux sinon. Ainsi, la boucle s'arretera si aucun de ces cas n'est rencontrés.
-Cette derniere s'arretera aussi si le caractère entré est \texttt{q}.
+Pour permettre la gestion de la répétition d'un coup, nous allons utiliser une boucle while et une variable booléenne \texttt{error\_case} initialisé à vrai. Cette variable redevient vrai dans les cas ou il est nécessaire de redemander le coup, et faux sinon. Ainsi, la boucle s'arrêtera si aucun de ces cas n'est rencontrés.
+Cette dernière s'arrêtera aussi si le caractère entré est \texttt{q}.
 Car, comme vu plus haut, dans ce cas, la fonction \texttt{get\_move()} renverra \texttt{size+1,size+1}. Il suffit donc de faire une condition sur uniquement d'une des deux composante de la position retournée.
 
-Il est important de preciser que lorsque l'on a plus besoins de lire un caractère avec \texttt{get\_char()}, il est necessaire de supprimer les valeurs encore stockées dans ce dernier. Pour ce faire, la fonction \texttt{clean\_buffer()} va appeler \texttt{get\_char()} jusqu'a ce que le caractère retourné par celui ci soit le caractère 'new line'
+Il est important de préciser que lorsque l'on a plus besoins de lire un caractère avec \texttt{get\_char()}, il est nécessaire de supprimer les valeurs encore stockées dans ce dernier. Pour ce faire, la fonction \texttt{clean\_buffer()} va appeler \texttt{get\_char()} jusqu'à ce que le caractère retourné par celui ci soit le caractère 'new line'
 
 \textit{À partir de maintenant, nous appellerons 'human\_player' le joueur utilisant la fonction human\_player().}
 
 
 \subsection{Implementation de l'algorithme Mini-Max}
-L'un des principaux objectifs de ce projet et de parvenir à créer un type de joueur capable de gagner quelque soit l'adversaire. Pour ce faire, l'une des methodes evidente est de parcourir toutes les combinaisons de coup possibles afin de determiner, lequel permet de gagner dans tous les cas. Nous verrons plus tard qu'il il est impossible de parcourir toutes les possibilitées jusqu'à la fin du jeu, c'est pourquoi il est necessaire de fixer une profondeur.
+L'un des principaux objectifs de ce projet et de parvenir à créer un type de joueur capable de gagner quelque soit l'adversaire. Pour ce faire, l'une des méthodes évidente est de parcourir toutes les combinaisons de coup possibles afin de déterminer, lequel permet de gagner dans tous les cas. Nous verrons plus tard qu'il il est impossible de parcourir toutes les possibilités jusqu'à la fin du jeu, c'est pourquoi il est nécessaire de fixer une profondeur.
 
-L'algorithme minimax permet, en fonction du joueur pour lequel il joue et pour chaque configuration du jeu, de lui maximiser une heuristique et, a l'opposé, de minimiser cette heuristique pour le jouer adverse.
-Nous commencerons avec une heuristique simple qui ne fait que calculer la difference entre le score du joueur et celui de son adversaire.
+L'algorithme Mini-Max permet, en fonction du joueur pour lequel il joue et pour chaque configuration du jeu, de lui maximiser une heuristique et, a l'opposé, de minimiser cette heuristique pour le jouer adverse.
+Nous commencerons avec une heuristique simple qui ne fait que calculer la différence entre le score du joueur et celui de son adversaire.
 \newline
 
 Exemple avec un plateau de taille $4\times4$ :
