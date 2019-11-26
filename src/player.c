@@ -88,16 +88,13 @@ static int score_heuristic_bis(board_t *board, disc_t player) {
       (board_get(board, size - 1, size - 2) == player) ||
       (board_get(board, size - 2, size - 2) == player) ||
       (board_get(board, size - 2, size - 1) == player)) {
-    int_score = int_score - 20;
+    int_score = int_score - 35;
   }
-
   /* last player managment (parity) */
   /* end of game */
   if (board_player(board) == EMPTY_DISC) {
     if (last_player == player) {
-      int_score = int_score + 5;
-    } else if (last_player == opponent) {
-      int_score = int_score - 5;
+      int_score = int_score + 10;
     }
   }
 
