@@ -590,7 +590,7 @@ Nous commencerons avec une heuristique simple qui ne fait que calculer la diffé
 Exemple avec un plateau de taille $4\times4$ :
 On suppose que le joueur X est minimax en profondeur 1.
 
-\begin{figure}[!h]
+
 \begin{center}
 \renewcommand{\arraystretch} {1.5}
     \begin{tabular}{c|c|c|c|c|}
@@ -609,9 +609,9 @@ On suppose que le joueur X est minimax en profondeur 1.
 \end{center}
 \begin{center}
     \label{Figure 1}
-    \caption{Joueur actuel : X ; Scores : X : 3 , O : 7}
+    \title{Joueur actuel : X ; Scores : X : 3 , O : 7}
 \end{center}
-\end{figure}
+
 
 C'est au joueur X de jouer. L'algorithme minimax va donc maximiser l'heuristique des 4 coups possibles.
 
@@ -719,9 +719,9 @@ Parmis les 4 coups possible, la différence de score du coup D2 est supérieur �
 
 \subsubsection{\texttt{minimax\_machine()}}
 
-Commençons à présent par implementer cette fonction. D'abord, intéressons nous à la fonction \texttt{static int minimax\_machine(board\_t *board, size\_t depth, disc\_t player)} qui prend en paramètre variable :
+Commençons à présent par implementer cette fonction. D'abord, intéressons nous à la fonction \texttt{static int minimax\_machine(board\_t *board, size\_t depth, disc\_t player)} qui prend en paramètre les variables :
 
-- \texttt{board} qui est le plateau sur lequel on joue,
+- \texttt{board} qui est la structure contenant le plateau sur lequel on joue,
 
 - \texttt{depth} qui est la profondeur d'observation,
 
@@ -733,25 +733,25 @@ On va commencer par récupérer le joueur actuel. Ensuite, on continue si ce der
 - \underline{Premier cas :}
 C'est le cas ou le joueur actuel du plateau est le même que celui pour lequel on souhaite maximiser l'heuristique.
 On définit une variable \texttt{best\_score} à \texttt{-INFINITY} \footnote{On notera que, l'on fixe \texttt{INFINITY} à la borne maximal d'un integer, soir $2^{15}-1 = 32767 $.} car on souhaite trouver le maximum parmi plusieurs valeur. Il faut donc que la première valeur de référence soit très petite afin de la remplacer dès la première comparaison.
-A ce stade, pour tout les coups possible du joueur, on va jouer le coup sur une copie \texttt{tmp\_board} du même plateau pour ensuite récupérer dans \texttt{score} la valeur retourné par \texttt{minimax\_machine(tmp\_board, depth - 1, player)}. Apres avoir executé cette etape, \texttt{tmp\_board} est inutile, on peut donc le liberer avec \texttt{board\_free(tmp\_board)}.
-Ensuite, on compare \texttt{best\_score} avec \texttt{score} et si cette derniere est superieur à \texttt{best\_score}, alors \texttt{best\_score} prend la valeur de \texttt{score}.\newline
+A ce stade, pour tout les coups possible du joueur, on va jouer le coup sur une copie \texttt{tmp\_board} du même plateau pour ensuite récupérer dans \texttt{score} la valeur retournée par \texttt{minimax\_machine(tmp\_board, depth - 1, player)}. Apres avoir executé cette etape, \texttt{tmp\_board} est inutile, on peut donc le liberer avec \texttt{board\_free(tmp\_board)}.
+Ensuite, on compare \texttt{best\_score} avec \texttt{score} et si cette dernière est supérieur à \texttt{best\_score}, alors \texttt{best\_score} prend la valeur de \texttt{score}.\newline
 
 - \underline{Deuxieme cas :}
 Le deuxième cas, opposé au premier, n'est pas très différent de ce dernier car, comme on sait que le joueur actuel est l'adversaire, on va minimiser son heuristique et donc définir \texttt{best\_score} à \texttt{INFINITY}. De plus, lors de la comparaison, \texttt{best\_score} prend la valeur de \texttt{score} si \texttt{score} est inférieur à \texttt{best\_score}.\newline
 
-On vient donc d'implementer une fonction permettant de renvoyer la meilleur heuristique jusqu'à une certaine profondeur.
+On vient donc d'implémenter une fonction permettant de renvoyer la meilleur heuristique jusqu'à une certaine profondeur.
 
-\subsubsection{\texttt{minimax\_player}}
+\subsubsection{\texttt{minimax\_player()}}
 
-Voyons maintenant \texttt{static move\_t minimax\_player(board\_t *board, size\_t depth)} qui, en fonction d'une disposition de jeu et d'une profondeur va nous renvoyer le meilleur coup possible d'apres l'heuristique.
+Voyons maintenant \texttt{static move\_t minimax\_player(board\_t *board, size\_t depth)} qui, en fonction d'une disposition de jeu et d'une profondeur va nous renvoyer le meilleur coup possible d'après l'heuristique.
 
-Etant donné qu'il s'agit de la premiere execution a partir du moment ou le joueur souhaite connaitre le meilleur coup, on sait que la disposition du plateau et le joueur actuel n'ont pas changés. Il s'agit donc, dans cette fonction, de trouver la maximum parmi les valeurs de \texttt{minimax\_machine()} avec comme parametre les plateaux sur lesquels on a joué un des coups possibles, pour chaque coup possible.
+Étant donné qu'il s'agit de la première exécution a partir du moment ou le joueur souhaite connaître le meilleur coup, on sait que la disposition du plateau et le joueur actuel n'ont pas changés. Il s'agit donc, dans cette fonction, de trouver la maximum parmi les valeurs de \texttt{minimax\_machine()} avec comme paramètre les plateaux sur lesquels on a joué un des coups possibles, pour chaque coup possible.
 
 L'algorithme est le suivant :
 
 - on récupère le joueur actuel dans \texttt{current\_player};
 
-- on definit \texttt{best\_score} à \texttt{-INFINITY} et on declare \texttt{best\_move};
+- on définit \texttt{best\_score} à \texttt{-INFINITY} et on declare \texttt{best\_move};
 
 - pour chaque coup possible \texttt{move};
 \tabto{1 cm} - si \texttt{best\_move} n'a pas de valeur, ce dernier prend la valeur de \texttt{move};
