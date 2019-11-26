@@ -571,19 +571,19 @@ Pour résumer, cette fonction renverra les coups \texttt{size,*} et/ou \texttt{*
 Nous pouvons maintenant nous intéresser à la fonction principale.
 
 
-Pour permettre la gestion de la répétition d'un coup, nous allons utiliser une boucle while et une variable booléenne \texttt{error\_case} initialisé à vrai. Cette variable redevient vrai dans les cas ou il est nécessaire de redemander le coup, et faux sinon. Ainsi, la boucle s'arrêtera si aucun de ces cas n'est rencontrés.
+Pour permettre la gestion de la répétition d'un coup, nous allons utiliser une boucle while et une variable booléenne \texttt{error\_case} initialisée à vrai. Cette variable redevient vrai dans les cas ou il est nécessaire de redemander le coup, et faux sinon. Ainsi, la boucle s'arrêtera si aucun de ces cas n'est rencontrés.
 Cette dernière s'arrêtera aussi si le caractère entré est \texttt{q}.
 Car, comme vu plus haut, dans ce cas, la fonction \texttt{get\_move()} renverra \texttt{size+1,size+1}. Il suffit donc de faire une condition sur uniquement d'une des deux composante de la position retournée.
 
-Il est important de préciser que lorsque l'on a plus besoins de lire un caractère avec \texttt{get\_char()}, il est nécessaire de supprimer les valeurs encore stockées dans ce dernier. Pour ce faire, la fonction \texttt{clean\_buffer()} va appeler \texttt{get\_char()} jusqu'à ce que le caractère retourné par celui ci soit le caractère 'new line'
+Il est important de préciser que lorsque l'on a plus besoins de lire un caractère avec \texttt{get\_char()}, il est nécessaire de supprimer les valeurs encore stockées dans ce dernier. Pour ce faire, la fonction \texttt{clean\_buffer()} va appeler \texttt{get\_char()} jusqu'à ce que le caractère retourné par celui ci soit le caractère 'new line'\newline
 
 \textit{À partir de maintenant, nous appellerons 'human\_player' le joueur utilisant la fonction human\_player().}
 
 
 \subsection{Implementation de l'algorithme Mini-Max}
-L'un des principaux objectifs de ce projet et de parvenir à créer un type de joueur capable de gagner quelque soit l'adversaire. Pour ce faire, l'une des méthodes évidente est de parcourir toutes les combinaisons de coup possibles afin de déterminer, lequel permet de gagner dans tous les cas. Nous verrons plus tard qu'il il est impossible de parcourir toutes les possibilités jusqu'à la fin du jeu, c'est pourquoi il est nécessaire de fixer une profondeur.
+L'un des principaux objectifs de ce projet et de parvenir à créer un type de joueur capable de gagner quelque soit l'adversaire. Pour ce faire, l'une des méthodes évidente est de parcourir toutes les combinaisons de coup possibles afin de déterminer, lequel permet de prendre le dessus sur l'adversaire. Cependant, en supposant que chaque joueur a au moins 2 coups possibles et qu'ils jouent chacun leur tour sur un plateau de taille 8$\times$8, lors du premier parcourt, il y aura $2^{64}$ possibilités de jeux, ce qui est impossible à faire en un temps raisonnable pour l'instant. C'est pourquoi il est nécessaire de fixer une profondeur.
 
-L'algorithme Mini-Max permet, en fonction du joueur pour lequel il joue et pour chaque configuration du jeu, de lui maximiser une heuristique et, a l'opposé, de minimiser cette heuristique pour le jouer adverse.
+L'algorithme Mini-Max permet, en fonction du joueur pour lequel il joue et pour chaque configuration du jeu, de lui maximiser une heuristique et, à l'opposé, de minimiser cette heuristique pour le jouer adverse.
 Nous commencerons avec une heuristique simple qui ne fait que calculer la différence entre le score du joueur et celui de son adversaire.
 \newline
 
