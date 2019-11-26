@@ -47,10 +47,10 @@ stringstyle=\color[rgb]{0.627,0.126,0.941},
 
 \chapter{Implementation}
 
-\section{Interface generale}
-L'interface est importante, elle va nous permettre d'interagir avec le jeu. Il faut donc qu'elle soit la plus fiable possible, et qu'elle informe sur le conportement de ce de dernier tout en restant simple à comprendre.
+\section{Interface générale}
+L'interface est importante, elle va nous permettre d'interagir avec le jeu. Il faut donc qu'elle soit la plus fiable possible, et qu'elle informe sur le comportement de ce de dernier tout en restant simple à comprendre.
 \subsection{Norme d'erreur}
-La gestion des erreurs et de son affichage se fera dans le fichier reversi.c. elles se présenteront de la facon suivante : \texttt{reversi: t: i} avec
+La gestion des erreurs et de son affichage se fera dans le fichier reversi.c. elles se présenteront de la façon suivante : \texttt{reversi: t: i} avec
 
 - \texttt{t} le type de l'erreur
 
@@ -824,7 +824,7 @@ Soit \texttt{player}, le joueur pour qui l'algorithme doit renvoyer le coup.\new
 
 \subsection{Gestion des joueurs}
 
-Au fur et a mesure de l'avancement du projet, nous allons devoir ajouter et tester différents types de joueurs afin de déterminer lequel est le plus efficace. Il nous vient donc le problème suivant : Comment ajouter et utiliser facilement dans \texttt{reversi.c} un type de joueur implémenté dans \texttt{player.c} ?
+Au fur et à mesure de l'avancement du projet, nous allons devoir ajouter et tester différents types de joueurs afin de déterminer lequel est le plus efficace. Il nous vient donc le problème suivant : Comment ajouter et utiliser facilement dans \texttt{reversi.c} un type de joueur implémenté dans \texttt{player.c} ?
 
 Pour résoudre ce problème, nous allons créer une constante de préprocesseur \texttt{NBR\_PLAY\_FUNC} qui définit le nombre de type de joueur. Nous pouvons donc l'utiliser pour définir deux tableaux statiques de cette taille, le tableau \texttt{play\_func} qui va contenir les pointeurs des fonctions simulant les types de joueurs, et le tableau \texttt{name\_play\_func} qui va contenir le nom de chaque type de joueur correspondant, à la même position de ce dernier.
 \newline
@@ -982,13 +982,13 @@ Pour le joueur aléatoire, une partie se fait instantanément, mais regardons pl
 La figures en annexe contient deux graphiques représentant le temps \textit{(axe des ordonnées)} d'exécution de 100 parties en fonction de la profondeur \textit{(axe des abscisse)}. Afin de comparer facilement, les deux graphiques sont à la même échelle de temps. On s'aperçoit que, le temps moyen d'une partie joué avec Mini-Max contre random\_player crois plus rapidement que celui d'une partie joué avec alpha-beta contre random\_player quand la profondeur augmente. Cependant il reste en temps exponentiel.
 
 
-\subsubsection{Uniformité de random\_player}
+\subsubsection{Uniformité de \texttt{random\_player}}
 
-On voudrait voir à present si random\_player est uniforme, c'est a dire si les deux joueurs on la meme chance de gagner. \newline
+On voudrait voir à présent si \texttt{random\_player} est uniforme, c'est a dire si les deux joueurs on la même chance de gagner. \newline
 
 
 Faisons le test sur 10000 parties avec X le premier à jouer.
-\textit{On prendra la couleur rouge pour représenter le joueur X et bleu pour le joueur O.}\newline
+\textit{On prendra la couleur rouge pour représenter le joueur X et bleu pour le jouer O.}\newline
 \newline
 
 \begin{center}
@@ -1049,7 +1049,7 @@ Pour cela, j'ai utiliser des condition (switch) sur la taille du plateau afin de
 Au même titre que la fonction native de gcc \texttt{\_\_builtin\_ctz()} vu dans la partie traitant sur \texttt{board\_next\_move()}, il existe la fonction \newline\texttt{\_\_builtin\_popcount()}.
 J'ai donc fait quelques test de comparaison entre ces deux fonctions. La première différence notable est que \texttt{\_\_builtin\_popcount()} ne peut prendre que des entiers jusqu’à 8bit. Effectivement, il existe la même fonction \texttt{\_\_builtin\_popcountll()} qui peut prendre en entré des entiers de 64 bit mais les entiers avec lesquels nous travaillons sont de 128 bit. On va donc devoir joueur sur la taille d’un board si on utilise cette fonction. C’est une contrainte.
 
-Finalement, on obtient le même résultat qu'avec \texttt{\_\_builtin\_ctz()}, c'est a dire aucun changement notable au niveau du temps d'execution.
+Finalement, on obtient le même résultat qu'avec \texttt{\_\_builtin\_ctz()}, c'est a dire aucun changement notable au niveau du temps d'exécution.
 \section{L'heuristique}
 
 Intéressons nous maintenant à l'heuristique. C'est la partie essentiel pour permettre au joueur utilisant cette heuristique d'améliorer son taux de succès. Pour l'instant, elle ne fait que calculer le score en fonction d'un joueur. On rappel que nous utilisons Alpha-Beta, donc la valeur de l'heuristique calculé sera maximiser pour le joueur pour qui l'algorithme joue, et minimiser pour son adversaire. Ainsi, nous allons pouvoir manipuler ce score afin d'améliorer les chances de succès.
@@ -1094,10 +1094,10 @@ Voyons ce que donnent les statistiques avec cette nouvelle heuristique sur 1000 
 \end{center}
 
 \end{figure}
-On voit dans la figure 2.1 que l'heuristique 2 est plus efficace\footnote{On parlera de meilleur efficacité d'une heuristique A à une heuritique B lorsqu'un  joueur qui l'utilise à un meilleur pourcentage de réussite qu'avec la B}  que l'heuristique 1.\newline
+On voit dans la figure 2.1 que l'heuristique 2 est plus efficace\footnote{On parlera de meilleur efficacité d'une heuristique A à une heuristique B lorsqu'un  joueur qui l'utilise à un meilleur pourcentage de réussite qu'avec la B}  que l'heuristique 1.\newline
 
 Une autre question se pose : Quel valeur à ajouter et à soustraire faut il choisir afin de maximiser le taux de succès ?
-Remarque : le resultat est different suivant la profondeur.
+Remarque : le résultat est différent suivant la profondeur.
 
 On va faire différents test à profondeur 3
 a une profondeur de 3 :
@@ -1109,11 +1109,11 @@ a une profondeur de 3 :
 51.4\% de succes sur 1000 tests
 
 - alors que si l'on retire 10 au score si un move dans un coin est possible
-95.3\% de succes sur 1000 tests
+95.3\% de succès sur 1000 tests
 \newline
 
 - \underline{heuristique 3 :}
-Dans notre nouvelle heuristique, nous avons mis en oeuvre la statégie de priorité des coins. Maintenant ajoutons à ça la stratégie qui consiste à eviter de joueur dans les cases voisines aux coins. Le principe est le suivant : Si on a déjà joué dans l'une de ces cases, on retire 20 au score.
+Dans notre nouvelle heuristique, nous avons mis en oeuvre la stratégie de priorité des coins. Maintenant ajoutons à ça la stratégie qui consiste à éviter de joueur dans les cases voisines aux coins. Le principe est le suivant : Si on a déjà joué dans l'une de ces cases, on retire 20 au score.
 \newline
 Nous avons donc comme résultats :
 
