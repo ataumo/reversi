@@ -890,7 +890,7 @@ L'algorithme est le suivant :\newline
 - Pour tout $i\in[0,n]$,
 \tabto{1 cm} - on lance \texttt{./reversi} avec les option que l'on souhaite, et on récupère la chaîne de caractère renvoyé dans \texttt{stdout}
 \tabto{1 cm} - si \texttt{"Player 'X' win the game."}/\texttt{"Player 'O' win the game."} existe dans \texttt{stdout}, on incrémente \texttt{nbr\_win\_x}/\texttt{nbr\_win\_o}, respectivement,
-\tabto{1 cm} - si $i\times80/n$ est supérieur à \texttt{p}, on écrit '\#' et le pourcentage est mis à jour avec le calcul précédent. \footnote{Cette formule est utilisé pour calculer un pourcentage. Dans ce cas, à chaque pourcent obtenue, on écrit un caractère. Cependant, le terminal sur lequel on lance cette fonction peut, en général, contenir en largeur 80 caractères, d'ou la formule.}
+\tabto{1 cm} - si $i\times80/n$ est supérieur à \texttt{p}, on écrit '\#' et le pourcentage est mis à jour avec le calcul précédent. \footnote{Cette formule est utilisé pour calculer un pourcentage. Dans ce cas, à chaque pourcent obtenue, on écrit un caractère. Cependant, le terminal sur lequel on lance cette fonction peut, en général, contenir en largeur 80 caractères, d'où la formule.}
 
 - a la fin des n exécutions, on écrit : \newline
 \texttt{n} tests\newline
@@ -1037,7 +1037,7 @@ Maintenant, faisons le test toujours sur 10000 parties avec le joueur O qui comm
 
 On s'aperçoit après observation qu'un joueur à plus de chance de gagner si il n'est pas le premier à joueur
 
-\chapter{Ameliorations algorithmiques}
+\chapter{Améliorations algorithmiques}
 \section{La gestions des bitboards}
 \subsection{Les shifts}
 Les déplacements (shifts) de pions sont la base du fonctionnement du jeu. Ce sont les fonctions les plus appelées pendant une partie car elles permettent non seulement de déterminer les coups possibles mais en plus de trouver quels pions peuvent êtres retournées après qu'un autre soit posé.
