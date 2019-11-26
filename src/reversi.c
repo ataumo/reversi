@@ -127,12 +127,7 @@ static int game(move_t (*black)(board_t *), move_t (*white)(board_t *),
   score = board_score(board);
   black_score = score.black;
   white_score = score.white;
-  /* result of analyse */
-  if (board_size(board) > 2) {
-    fprintf(stdout, "the average of possibles moves %d, sum : %d, turn : %d\n",
-            possible_moves_sum / nbr_of_turn, possible_moves_sum, nbr_of_turn);
-  }
-  /**/
+
   if (black_score > white_score) {
     fprintf(stdout, "Player 'X' win the game.\n");
     return 1;

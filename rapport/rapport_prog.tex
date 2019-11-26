@@ -56,7 +56,7 @@ La gestion des erreurs et de son affichage se fera dans le fichier reversi.c. el
 
 - \texttt{i} l'indication concernant l'erreur
 
-Pour certaines des erreurs comme la lecture d'un fichier sans droit, il est renvoyé le numéro de l'erreur concerné.
+Pour certaines des erreurs comme la lecture d'un fichier sans droit, il est renvoyé le numéro de l'erreur concernée.
 
 \subsection{Le mode verbose}
 Le mode verbose est le mode permettant de voir le comportement des joueurs et la disposition du plateau tout au long du jeu.
@@ -69,7 +69,7 @@ Black player start !\newline
 \newline
 Playing...}\newline
 
-Ensuite, dans le cas ou le joueur est humain, le jeux va presenter le plateau et demander un coup.
+Ensuite, dans le cas où le joueur est humain, le jeux va présenter le plateau et demander un coup.
 
 À la fin de la partie, le plateau final et le score sont affichés : \newline\newline
 \texttt{Game over.\newline
@@ -129,7 +129,7 @@ O plays C6\newline
 \section{API board.c}
 \subsection{Les bitboard}
 
-Les bitboards sont des entiers dont les bits de la valeur binaire représentent l'état d'une case d'un tableau. \'Etant donné que la taille du plateau sur lequel nous jouons varie entre $2\times2$ et $10\times10$, la taille d'un bitboard doit donc être d'au moins 100 bit pour être capable de représenter tout le plateau. Or, un type de valeur doit être une puissance de 2. Ainsi, nos bitboard seront de taille 128 bits.
+Les bitboards sont des entiers dont les bits de la valeur binaire représentent l'état d'une case d'un tableau. \'Etant donné que la taille du plateau sur lequel nous jouons varie entre $2\times2$ et $10\times10$, la taille d'un bitboard doit donc être d'au moins 100 bit pour être capable de représenter tout le plateau. Or, un type de valeur doit être une puissance de 2. Ainsi, nos bitboards seront de taille 128 bits.
 
 Avant de commencer à utiliser de tels entiers, nous allons définir la convention suivante : la case 0,0 (la case tout en haut à gauche du plateau) sera représenté par le bit de poids faible.\newline
 \newline
@@ -382,7 +382,7 @@ Le fonctionnement de shift-est est quasiment identique à celui de shift-west :
 \end{center}
 
 \subsection{La fonction trace}
-Lorsque le joueur actuel\footnote{On définit le joueur actuel comme le joueur à qui c'est le tour de jouer. On notera que ce dernier peut ne pas pouvoir jouer.} peut jouer, il pose un de ces pions sur la case correspondante à la position donné par ce joueur. Or, d’après la règle, tout les pions adverses se trouvant entourés à partir du pion précédemment posé se 'retournent'\footnote{On parle de pion qui se retourne lorsque ce dernier change de joueur.}, et cela, quelque soit la direction.
+Lorsque le joueur actuel\footnote{On définit le joueur actuel comme le joueur à qui c'est le tour de jouer. On notera que ce dernier peut ne pas pouvoir jouer.} peut jouer, il pose un de ces pion sur la case correspondante à la position donné par ce joueur. Or, d’après la règle, tout les pions adverses se trouvant entourés à partir du pion précédemment posé se 'retournent'\footnote{On parle de pion qui se retourne lorsque ce dernier change de joueur.}, et cela, quelque soit la direction.
 J’ai donc implémenté une fonction permettant de retrouver la 'trace' de tous les pions à retourner à partir du pion posé. Elle renvoie un bitboard qui n’a plus qu’à être retiré (ajouté) du board représentant les pions de l'adversaire (joueur actuel resp.).\newline
 
 L'algorithme est le suivant : \newline
@@ -424,7 +424,7 @@ On souhaite récupérer le premier coup à jouer en partant de la case 0,0. Comm
 
 Déjà, on voit bien qu'il est simple de récupérer la coordonné de la colonne en utilisant l'opérateur modulo avec le nombre de zéro précédent. Ensuite, on veut que, suivant une action entre la taille du plateau et ce nombre de zéro, on ait 0 comme coordonné de la ligne.
 
-On s'aperçoit que, pour $i$ quelconque, si $i<size$, la valeur entière de $i/size = 0$, de même, si $size<i<2\times size$, la valeur entière de $i/size = 1$.
+On s'aperçoit que, pour $i$ quelconque, si $i<size$, la valeur entière de $i/size = 0$, de même, si $size$ $\le$ $i<2\times size$, la valeur entière de $i/size = 1$.
 
 Ainsi, nous pouvons déterminer les coordonnées de ce coup avec le nombre de zéro qui le précède.\newline
 

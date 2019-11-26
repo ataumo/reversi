@@ -149,6 +149,7 @@ static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
       }
     }
     return current;
+
   } else {
     size_t nbr_poss_moves = board_count_player_moves(board);
     for (size_t i = 0; i < nbr_poss_moves; i++) {
