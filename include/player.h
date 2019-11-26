@@ -38,6 +38,6 @@ move_t simul_alpha_beta_bis_player(board_t *board);
 
 /* alpha beta fail soft algorithm with clever heuristic */
 move_t simul_fail_soft_player(board_t *board);
-#define DEPTH_FAILSOFT 8
+#define DEPTH_FAILSOFT 3
 
 #endif /* PLAYER_H */

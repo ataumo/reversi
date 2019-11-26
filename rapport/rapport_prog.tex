@@ -762,11 +762,65 @@ L'algorithme est le suivant :
 
 - on renvoie \texttt{best\_move}.\newline
 \newline
+
+
+
 \textit{À partir de maintenant, Nous appellerons 'minimax\_player' le joueur simulant l'agorithme Mini-Max.}
 
 \subsection{Implementation de l'algorithme Alpha-Beta}
 
-L'algorithme Alpha-Beta est similaire à celui de Mini-Max. Il va parcourir les différentes configurations du plateau afin de renvoyer la meilleur. Seulement, contrairement à Mini-Max, l'algorithme Alpha-Beta ne parcourt que les branches pertinentes.
+L'algorithme Alpha-Beta est similaire à celui de Mini-Max. Il va parcourir les différentes configurations du plateau afin de renvoyer la meilleur. Seulement, contrairement à Mini-Max, l'algorithme Alpha-Beta ne parcourt que les branches pertinentes.\newline
+
+\underline{\texttt{alpha\_beta\_machine()}}
+\newline
+\newline
+Reprenons l'algorithme de \texttt{mini\_max\_machine()}, en y ajoutant deux conditions :
+
+Soit \texttt{player}, le joueur pour qui l'algorithme doit renvoyer le coup.\newline
+- on récupère le joueur actuel dans \texttt{current\_player};\newline
+- si la partie est terminé ou si la profondeur atteinte est 0;
+\tabto{1 cm}- on renvoie l'heuristique en fonction de \texttt{player}\newline
+- si \texttt{current\_player} = \texttt{player}
+\tabto{1 cm}- pour chaque coup possible \texttt{move};
+\tabto{1 cm} - on joue \texttt{move} dans \texttt{tmp\_board}, une copie temporaire du plateau;
+\tabto{1 cm} - \texttt{best\_score} = \texttt{alpha\_beta\_machine(tmp\_board, depth - 1, alpha, beta, current\_player)};
+\tabto{1 cm} - on libère le plateau temporaire;
+\tabto{1 cm} - si \texttt{score} > \texttt{alpha}
+\tabto{2 cm} - \texttt{alpha} = \texttt{score};
+\tabto{2 cm} - si alpha >= beta
+\tabto{3 cm} - on stop la boucle
+\tabto{1 cm} - on renvoie \texttt{alpha}\newline
+- si \texttt{current\_player} $\ne$ \texttt{player}
+\tabto{1 cm}- pour chaque coup possible \texttt{move};
+\tabto{1 cm} - on joue \texttt{move} dans \texttt{tmp\_board}, une copie temporaire du plateau;
+\tabto{1 cm} - \texttt{best\_score} = \texttt{alpha\_beta\_machine(tmp\_board, depth - 1, alpha, beta, current\_player)};
+\tabto{1 cm} - on libère le plateau temporaire;
+\tabto{1 cm} - si \texttt{score} < \texttt{alpha}
+\tabto{2 cm} - \texttt{alpha} = \texttt{score};
+\tabto{2 cm} - si alpha >= beta
+\tabto{3 cm} - on stop la boucle
+\tabto{1 cm} - on renvoie \texttt{beta}
+\newline
+\newline
+
+\underline{\texttt{alpha\_beta\_player()}}
+\newline
+\newline
+- on récupère le joueur actuel dans \texttt{current\_player};\newline
+- \texttt{best\_score} = \texttt{-INFINITY}\newline
+- on définit \texttt{best\_move};\newline
+- pour chaque coup possible \texttt{move};
+\tabto{1 cm} - si \texttt{best\_move} n'a pas de valeur
+\tabto{2 cm} - \texttt{best\_move} = \texttt{move}
+\tabto{1 cm} - on joue \texttt{move} dans \texttt{tmp\_board}, une copie temporaire du plateau;
+\tabto{1 cm} - \texttt{best\_score} = \texttt{alpha\_beta\_machine(tmp\_board, depth - 1, -INFINITY, INFINITY, current\_player)};
+\tabto{1 cm} - si \texttt{score} > \texttt{best\_score};
+\tabto{2 cm} - \texttt{best\_score} = \texttt{score}
+\tabto{2 cm} - \texttt{best\_move} = \texttt{move};
+\tabto{1 cm} - on libère le plateau temporaire;
+\newline
+- on renvoie \texttt{best\_move}.\newline
+\newline
 
 \subsection{Gestion des joueurs}
 
@@ -988,9 +1042,9 @@ On s'aperçoit après observation qu'un joueur à plus de chance de gagner si il
 \subsection{Les shifts}
 Les déplacements (shifts) de pions sont la base du fonctionnement du jeu. Ce sont les fonctions les plus appelées pendant une partie car elles permettent non seulement de déterminer les coups possibles mais en plus de trouver quels pions peuvent êtres retournées après qu'un autre soit posé.
 Il faut donc minimiser les calculs au maximum dans ces fonctions.
-Pour cela, nous avons utiliser des condition sur la taille du plateau afin de ne pas à avoir à calculer le masque en fonction de la taille. De plus, comme il y a un masque différent pour chaque taille, on va les stocker dans des préprocesseur.
+Pour cela, j'ai utiliser des condition (switch) sur la taille du plateau afin de ne pas à avoir à calculer le masque en fonction de la taille. De plus, comme il y a un masque différent pour chaque taille, je les ai stockés dans des préprocesseur.
 
-\subsection{test du popcount}
+\subsection{Test du popcount}
 
 Au même titre que la fonction native de gcc \texttt{\_\_builtin\_ctz()} vu dans la partie traitant sur \texttt{board\_next\_move()}, il existe la fonction \newline\texttt{\_\_builtin\_popcount()}.
 J'ai donc fait quelques test de comparaison entre ces deux fonctions. La première différence notable est que \texttt{\_\_builtin\_popcount()} ne peut prendre que des entiers jusqu’à 8bit. Effectivement, il existe la même fonction \texttt{\_\_builtin\_popcountll()} qui peut prendre en entré des entiers de 64 bit mais les entiers avec lesquels nous travaillons sont de 128 bit. On va donc devoir joueur sur la taille d’un board si on utilise cette fonction. C’est une contrainte.
@@ -998,33 +1052,20 @@ J'ai donc fait quelques test de comparaison entre ces deux fonctions. La premiè
 Finalement, on obtient le même résultat qu'avec \texttt{\_\_builtin\_ctz()}, c'est a dire aucun changement notable au niveau du temps d'execution.
 \section{L'heuristique}
 
-Intéressons nous maintenant à l'heuristique. C'est la partie essentiel pour permettre au joueur utilisant cette heuristique d'améliorer son taux de succès. Pour l'instant, elle ne fait que calculer le score en fonction d'un joueur. On rappel que nous utilisons Alpha-Beta, donc la valeur de l'heuristique calculé sera maximiser pour le joueur pour qui l'algorithme joue, et minimiser pour son adversaire. Ainsi, nous allons pouvoir manipuler ce score afin d'améliorer les chances de succès
+Intéressons nous maintenant à l'heuristique. C'est la partie essentiel pour permettre au joueur utilisant cette heuristique d'améliorer son taux de succès. Pour l'instant, elle ne fait que calculer le score en fonction d'un joueur. On rappel que nous utilisons Alpha-Beta, donc la valeur de l'heuristique calculé sera maximiser pour le joueur pour qui l'algorithme joue, et minimiser pour son adversaire. Ainsi, nous allons pouvoir manipuler ce score afin d'améliorer les chances de succès.
 
 \subsection{Gestion des coins}
 L'une des stratégie efficace du reversi est de jouer en priorité dans les coins car l'adversaire ne pourra jamais encadrer le pion se trouvant à cette position. A l'opposé, if faut éviter de jouer sur les cases voisines aux coins car cela ouvre un chemin potentiel à l'adversaire pour jouer dans un coin.
 \newline
 
+- \underline{heuristique 1 :} Calcul de la différence de score en retirant le score de l'adversaire à celui du joueur.\newline
 
 - \underline{heuristique 2 :}
 Le principe est simple : on vérifie si on a déjà joué dans l'un des quatre coins possibles. Si c'est le cas, on ajoute 5 au score\footnote{On prend 5 de façon arbitraire.}. Sinon, on vérifie si le joueur adverse à joué dans l'un des coins, si c'est le cas on retire 5 au score.
 \newline
 \newline
-Voyons ce que donne les statistiques avec cette nouvelle heuristique sur 1000 parties :
-
-
-
+Voyons ce que donnent les statistiques avec cette nouvelle heuristique sur 1000 parties :
 \begin{figure}[!h]
-\begin{center}
-\renewcommand{\arraystretch} {1.5}
-    \begin{tabular}{c|c|c|c|c|c|}
-        profondeur & 1 & 2 & 3 & 4 & 5\\
-        \hline
-        heuristique 1 & 58.9 & 75.7 & 78.2 & 82.8 & 89.3\\
-        \hline
-        heuristique 2 & 70.4 & 86.8 & 89.9 & 94.7 & 95\\
-        \hline
-    \end{tabular}
-\end{center}
 \begin{center}
 \begin{tikzpicture}
 \begin{axis}[
@@ -1053,8 +1094,7 @@ Voyons ce que donne les statistiques avec cette nouvelle heuristique sur 1000 pa
 \end{center}
 
 \end{figure}
-
-On voit que l'heuristique 2 est plus efficace\footnote{On parlera de meilleur efficacité d'une heuristique A à une heuritique B lorsqu'un  joueur qui l'utilise à un meilleur pourcentage de réussite qu'avec la B}  que l'heuristique 1.\newline
+On voit dans la figure 2.1 que l'heuristique 2 est plus efficace\footnote{On parlera de meilleur efficacité d'une heuristique A à une heuritique B lorsqu'un  joueur qui l'utilise à un meilleur pourcentage de réussite qu'avec la B}  que l'heuristique 1.\newline
 
 Une autre question se pose : Quel valeur à ajouter et à soustraire faut il choisir afin de maximiser le taux de succès ?
 Remarque : le resultat est different suivant la profondeur.
@@ -1070,25 +1110,14 @@ a une profondeur de 3 :
 
 - alors que si l'on retire 10 au score si un move dans un coin est possible
 95.3\% de succes sur 1000 tests
-
+\newline
 
 - \underline{heuristique 3 :}
-Dans notre nouvelle heuristique, nous avons mis en oeuvre la statégie de priorité des coins. Maintenant ajoutons à ça la stratégie qui consiste à eviter de joueur dans les voisins des coins. Le principe est le suivant : Si on a déjà joué dans l'une de ces cases, on retire 20 au score.
+Dans notre nouvelle heuristique, nous avons mis en oeuvre la statégie de priorité des coins. Maintenant ajoutons à ça la stratégie qui consiste à eviter de joueur dans les cases voisines aux coins. Le principe est le suivant : Si on a déjà joué dans l'une de ces cases, on retire 20 au score.
 \newline
 Nous avons donc comme résultats :
 
 \begin{figure}[!h]
-\begin{center}
-\renewcommand{\arraystretch} {1.5}
-    \begin{tabular}{c|c|c|c|c|c|}
-        profondeur & 1 & 2 & 3 & 4 & 5 \\
-        \hline
-        heuristique 2 & 70.4 & 86.8 & 89.9 & 94.7 & 95\\
-        \hline
-        heuristique 3 & 86.6 & 92.5 & 96.3 & 96.3 & 96.4\\
-        \hline
-    \end{tabular}
-\end{center}
 \begin{center}
 \begin{tikzpicture}
 \begin{axis}[
@@ -1119,39 +1148,6 @@ Nous avons donc comme résultats :
 \end{figure}
 
 
-
-\begin{figure}[!h]
-\begin{center}
-\renewcommand{\arraystretch} {1.5}
-    \begin{tabular}{c|c|c|c|c|c|c|c|c|c|}
-          &A & B & C & D & E & F & G & H \\
-        \hline
-        1 & C & N & & & & & N & C\\
-        \hline
-        2 & N & N & & & & & N & N \\
-        \hline
-        3 & & & & & & & & \\
-        \hline
-        4 & & & & & & & & \\
-        \hline
-        5 & & & & & & & & \\
-        \hline
-        6 & & & & & & & & \\
-        \hline
-        7 & N & N & & & & & N & N \\
-        \hline
-        8 & C & N & & & & & N & C \\
-        \hline
-    \end{tabular}
-
-
-\end{center}
-\begin{center}
-    \title{Plateau $8\times8$}
-\end{center}
-\end{figure}
-
-
 \subsection{Gestion de la parité}
 
 On a vu plus haut, que lorsque l'on a comparé deux test qui faisait jouer deux random\_player, on s'est aperçu que le joueur jouant en deuxième avait plus de chance de gagner. En réalité, c'est tout simplement parce qu'il a plus de chance de terminer la partie. Effectivement, si les joueur joue à tour de rôle, le deuxième à avoir posé son premier pion terminera la partie et aura un avantage sur le plateau. C'est la parité. Ainsi, si nous somme le premier à devoir jouer, il faudra faire en sorte que l'adversaire ne puisse pas jouer pour passer son tour au moins une fois, et donc avoir l'avantage.
@@ -1159,11 +1155,6 @@ On a vu plus haut, que lorsque l'on a comparé deux test qui faisait jouer deux 
 L'algorithme est le suivant :
 
 Lorsque l'on parcourt l'arbre les possibilités de jeux, si l'on à atteint la fin du jeux, on vérifie si nous somme le dernier joueur à avoir posé un pion, dans ce cas favorable, on va augmenter le score de l'heuristique. Sinon, cela signifie c'est l'adversaire qui à posé le dernier pion, il faut donc baisser le score.
-
-\section{Alpha beta}
-\subsection{l'amelioration fail-soft}
-
-Lors des premieres implementationsd e Minimax et Alpha-Bata j'ai utiliser come methode d'heuritie le calcul simple de la dfference entre les deux scores suivant un jour donné.
 
 \chapter{Mesures prises tout au long du projet}
 

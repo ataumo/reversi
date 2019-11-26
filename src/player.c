@@ -164,10 +164,13 @@ static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
       }
       /******************/
       board_free(tmp_board);
-      if (score <= beta) {
-        beta = score;
-        if (alpha >= beta) {
-          break;
+      if (score >= current) {
+        current = score;
+        if (score <= beta) {
+          beta = score;
+          if (alpha >= beta) {
+            break;
+          }
         }
       }
     }
