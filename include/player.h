@@ -34,7 +34,7 @@ move_t simul_alpha_beta_player(board_t *board);
 
 /* alpha beta algorithm with clever heuristic */
 move_t simul_alpha_beta_bis_player(board_t *board);
-#define DEPTH_ALPHABETA_BIS 3
+#define DEPTH_ALPHABETA_BIS 8
 
 /* alpha beta fail soft algorithm with clever heuristic */
 move_t simul_fail_soft_player(board_t *board);
