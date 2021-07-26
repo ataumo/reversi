@@ -30,14 +30,23 @@ move_t simul_minimax_player(board_t *board);
 
 /* alpha beta algorithm with naive heuristic */
 move_t simul_alpha_beta_player(board_t *board);
+/* #define DEPTH_ALPHABETA 10 */
 #define DEPTH_ALPHABETA 6
 
 /* alpha beta algorithm with clever heuristic */
 move_t simul_alpha_beta_bis_player(board_t *board);
-#define DEPTH_ALPHABETA_BIS 8
+//#define DEPTH_ALPHABETA_BIS 8
+#define DEPTH_ALPHABETA_BIS 7
 
 /* alpha beta fail soft algorithm with clever heuristic */
 move_t simul_fail_soft_player(board_t *board);
-#define DEPTH_FAILSOFT 3
+#define DEPTH_FAILSOFT 5
+
+/* alpha beta negamax convention fail soft algorithm with clever heuristic */
+move_t simul_negamax_player(board_t *board);
+#define DEPTH_NEGAMAX 3
+
+move_t simul_pvs_player(board_t *board);
+#define DEPTH_PVS 10
 
 #endif /* PLAYER_H */
