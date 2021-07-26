@@ -110,31 +110,37 @@ move_t simul_best_player(board_t *board) {
 }
 
 /******************************************************************************/
-/************************ FAIL SOFT ALPHA BETA PLAYER *************************/
+/*************** ALPHA BETA PRINCIPAL VARIATION SEARCH PLAYER *****************/
 /******************************************************************************/
 
-static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
-                             disc_t player) {
+static int pvs_machine(board_t *board, size_t depth, int alpha, int beta,
+                       disc_t player) {
   disc_t current_player = board_player(board);
-  int current = -INFINITY;
   if (current_player == EMPTY_DISC || depth == 0) {
     return score_heuristic_bis(board, player);
   }
-  if (current_player == player) {
+
+  board_t *tmp_board_1 = board_copy(board);
+  move_t current_move = board_next_move(board);
+  board_play(tmp_board_1, current_move);
+  int current = -pvs_machine(tmp_board_1, depth - 1, -beta, -alpha, player);
+  board_free(tmp_board_1);
+
+  if (current >= alpha) {
+    alpha = current;
+  }
+  if (current < beta) {
     size_t nbr_poss_moves = board_count_player_moves(board);
     for (size_t i = 0; i < nbr_poss_moves; i++) {
-      board_t *tmp_board = board_copy(board);
+      board_t *tmp_board_2 = board_copy(board);
       move_t current_move = board_next_move(board);
-      board_play(tmp_board, current_move);
-      /* time managment */
-      int score;
-      if (check_time_out()) {
-        score = fail_soft_machine(tmp_board, 0, alpha, beta, player);
-      } else {
-        score = fail_soft_machine(tmp_board, depth - 1, alpha, beta, player);
+      board_play(tmp_board_2, current_move);
+      int score =
+          -pvs_machine(tmp_board_2, depth - 1, -(alpha + 1), -alpha, player);
+      if (score > alpha && score < beta) {
+        score = -pvs_machine(tmp_board_2, depth - 1, -beta, -alpha, player);
       }
-      /******************/
-      board_free(tmp_board);
+      board_free(tmp_board_2);
       if (score >= current) {
         current = score;
         if (score >= alpha) {
@@ -145,35 +151,123 @@ static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
         }
       }
     }
-    return current;
+  }
 
-  } else {
-    size_t nbr_poss_moves = board_count_player_moves(board);
-    for (size_t i = 0; i < nbr_poss_moves; i++) {
-      board_t *tmp_board = board_copy(board);
-      move_t current_move = board_next_move(board);
-      board_play(tmp_board, current_move);
-      /* time managment */
-      int score;
-      if (check_time_out()) {
-        score = fail_soft_machine(tmp_board, 0, alpha, beta, player);
-      } else {
-        score = fail_soft_machine(tmp_board, depth - 1, alpha, beta, player);
+  return current;
+}
+
+static move_t pvs_player(board_t *board, size_t depth) {
+  disc_t current_player = board_player(board);
+  int best_score = -INFINITY;
+  size_t size = board_size(board);
+  move_t best_move = (move_t){size, size};
+  size_t nbr_poss_moves = board_count_player_moves(board);
+  for (size_t i = 0; i < nbr_poss_moves; i++) {
+
+    board_t *tmp_board = board_copy(board);
+    move_t current_move = board_next_move(board);
+    if (i == 0) {
+      best_move = current_move;
+    }
+    board_play(tmp_board, current_move);
+    int score =
+        pvs_machine(tmp_board, depth - 1, -INFINITY, INFINITY, current_player);
+    board_free(tmp_board);
+    if (score > best_score) {
+      best_score = score;
+      best_move = current_move;
+    }
+  }
+  return best_move;
+}
+
+move_t simul_pvs_player(board_t *board) { return pvs_player(board, DEPTH_PVS); }
+
+/******************************************************************************/
+/******************* ALPHA BETA NEGAMAX CONVENTION PLAYER *********************/
+/******************************************************************************/
+
+static int negamax_machine(board_t *board, size_t depth, int alpha, int beta,
+                           disc_t player) {
+  disc_t current_player = board_player(board);
+  if (current_player == EMPTY_DISC || depth == 0) {
+    return score_heuristic_bis(board, player);
+  }
+  size_t nbr_poss_moves = board_count_player_moves(board);
+  for (size_t i = 0; i < nbr_poss_moves; i++) {
+    board_t *tmp_board = board_copy(board);
+    move_t current_move = board_next_move(board);
+    board_play(tmp_board, current_move);
+    int score = -negamax_machine(tmp_board, depth - 1, -beta, -alpha, player);
+    board_free(tmp_board);
+    if (score >= alpha) {
+      alpha = score;
+      if (alpha >= beta) {
+        break;
       }
-      /******************/
-      board_free(tmp_board);
-      if (score >= current) {
-        current = score;
-        if (score <= beta) {
-          beta = score;
-          if (alpha >= beta) {
-            break;
-          }
+    }
+  }
+  return alpha;
+}
+
+static move_t negamax_player(board_t *board, size_t depth) {
+  disc_t current_player = board_player(board);
+  int best_score = -INFINITY;
+  size_t size = board_size(board);
+  move_t best_move = (move_t){size, size};
+  size_t nbr_poss_moves = board_count_player_moves(board);
+  for (size_t i = 0; i < nbr_poss_moves; i++) {
+
+    board_t *tmp_board = board_copy(board);
+    move_t current_move = board_next_move(board);
+    if (i == 0) {
+      best_move = current_move;
+    }
+    board_play(tmp_board, current_move);
+    int score = -negamax_machine(tmp_board, depth - 1, -INFINITY, INFINITY,
+                                 current_player);
+    board_free(tmp_board);
+    if (score > best_score) {
+      best_score = score;
+      best_move = current_move;
+    }
+  }
+  return best_move;
+}
+
+move_t simul_negamax_player(board_t *board) {
+  return negamax_player(board, DEPTH_NEGAMAX);
+}
+
+/******************************************************************************/
+/************************ FAIL SOFT ALPHA BETA PLAYER *************************/
+/******************************************************************************/
+
+static int fail_soft_machine(board_t *board, size_t depth, int alpha, int beta,
+                             disc_t player) {
+  disc_t current_player = board_player(board);
+  int current = -INFINITY;
+  if (current_player == EMPTY_DISC || depth == 0) {
+    return score_heuristic_bis(board, player);
+  }
+  size_t nbr_poss_moves = board_count_player_moves(board);
+  for (size_t i = 0; i < nbr_poss_moves; i++) {
+    board_t *tmp_board = board_copy(board);
+    move_t current_move = board_next_move(board);
+    board_play(tmp_board, current_move);
+    int score = -fail_soft_machine(tmp_board, depth - 1, -beta, -alpha, player);
+    board_free(tmp_board);
+    if (score >= current) {
+      current = score;
+      if (score >= alpha) {
+        alpha = score;
+        if (alpha >= beta) {
+          break;
         }
       }
     }
-    return beta;
   }
+  return current;
 }
 
 static move_t fail_soft_player(board_t *board, size_t depth) {
@@ -190,8 +284,8 @@ static move_t fail_soft_player(board_t *board, size_t depth) {
       best_move = current_move;
     }
     board_play(tmp_board, current_move);
-    int score = fail_soft_machine(tmp_board, depth - 1, -INFINITY, INFINITY,
-                                  current_player);
+    int score = -fail_soft_machine(tmp_board, depth - 1, -INFINITY, INFINITY,
+                                   current_player);
     board_free(tmp_board);
     if (score > best_score) {
       best_score = score;
